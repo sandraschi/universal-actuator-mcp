@@ -1,0 +1,70 @@
+­ƒÜÇ Starting Universal Actuator Rescue Verification...
+[Config] Loaded configuration from D:\Dev\repos\universal-actuator-mcp\config.json
+[Universal Actuator] Facade operational.
+Ô£à Connected to Universal Actuator
+
+--- Testing Internal System Domain ---
+ÔØî Internal Domain Failed: TypeError: v3Schema.safeParse is not a function
+    at safeParse (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js:34:29)
+    at file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js:688:41
+    at Client._onresponse (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js:479:13)
+    at _transport.onmessage (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js:234:22)
+    at StdioClientTransport.processReadBuffer (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js:130:33)
+    at Socket.<anonymous> (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js:92:22)
+    at Socket.emit (node:events:507:28)
+    at addChunk (node:internal/streams/readable:559:12)
+
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+--- Testing Federated Files Domain ---
+[Federation] Spawning sub-server for domain: files
+Tool modules will be imported by the main application
+{"event": "All portmanteau tool modules imported successfully", "logger": "filesystem_mcp", "level": "info", "timestamp": "2026-02-18T16:16:24.440464Z"}
+
+
++-----------------------------------------------------------------------------+
+|                                                                             |
+|                                                                             |
+|                        \u2584\u2580\u2580 \u2584\u2580\u2588 \u2588\u2580\u2580 \u2580\u2588\u2580 \u2588\u2580\u2584\u2580\u2588 \u2588\u2580\u2580 \u2588\u2580\u2588                        |
+|                        \u2588\u2580  \u2588\u2580\u2588 \u2584\u2584\u2588  \u2588  \u2588 \u2580 \u2588 \u2588\u2584\u2584 \u2588\u2580\u2580                        |
+|                                                                             |
+|                                                                             |
+|                               FastMCP 2.14.5                                |
+|                            https://gofastmcp.com                            |
+|                                                                             |
+|                    \U0001f5a5  Server:      filesystem-mcp                           |
+|                    \U0001f680 Deploy free: https://fastmcp.cloud                    |
+|                                                                             |
++-----------------------------------------------------------------------------+
++-----------------------------------------------------------------------------+
+|                          \u2728 FastMCP 3.0 is coming!                          |
+|      Pin `fastmcp < 3` in production, then upgrade when you're ready.       |
++-----------------------------------------------------------------------------+
+
+
+{"version": "2.2.0", "event": "Filesystem MCP server starting up", "logger": "filesystem_mcp", "level": "info", "timestamp": "2026-02-18T16:16:24.452045Z"}
+{"event": "FastMCP sampling not available - advanced autonomous features disabled", "logger": "filesystem_mcp", "level": "warning", "timestamp": "2026-02-18T16:16:24.452394Z"}
+{"state_keys": ["shutdown_time", "version"], "event": "Loaded persistent state", "logger": "filesystem_mcp", "level": "info", "timestamp": "2026-02-18T16:16:24.454123Z"}
+[02/18/26 17:16:24] INFO     Starting MCP server                 server.py:2506
+                             'filesystem-mcp' with transport                   
+                             'stdio'                                           
+Starting worker 'Goliath#57224' with the following tasks:
+* trace(message: str, ...)
+* fail(message: str, ...)
+* sleep(seconds: float, ...)
+Processing request of type ListToolsRequest
+[Federation] Routing 'file_exists' -> tool 'file_ops' with payload keys: operation,path
+Processing request of type CallToolRequest
+ÔØî Federated Domain Failed: TypeError: v3Schema.safeParse is not a function
+    at safeParse (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js:34:29)
+    at file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js:688:41
+    at Client._onresponse (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js:479:13)
+    at _transport.onmessage (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js:234:22)
+    at StdioClientTransport.processReadBuffer (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js:130:33)
+    at Socket.<anonymous> (file:///D:/Dev/repos/universal-actuator-mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js:92:22)
+    at Socket.emit (node:events:507:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+
+Ô£¿ Verification Complete!

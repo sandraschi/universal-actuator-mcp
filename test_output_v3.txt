@@ -1,0 +1,63 @@
+­ƒÜÇ Starting Universal Actuator Rescue Verification...
+[Config] Loaded configuration from D:\Dev\repos\universal-actuator-mcp\config.json
+[Universal Actuator] Facade operational.
+Ô£à Connected to Universal Actuator
+
+--- Testing Tool Discovery ---
+Available Tools: universal_actuator
+
+--- Testing Internal System Domain ---
+Info Result Content: [
+  {
+    "type": "text",
+    "text": "{\n  \"status\": \"operational\",\n  \"philosophy\": \"Materialist/Reductionist\",\n  \"federation_count\": 6,\n  \"active_domains\": [\n    \"files\",\n    \"system\",\n    \"browser\",\n    \"blender\",\n    \"gimp\",\n    \"inkscape\"\n  ]\n}"
+  }
+]
+
+--- Testing Federated Files Domain ---
+[Federation] Spawning sub-server for domain: files
+Tool modules will be imported by the main application
+{"event": "All portmanteau tool modules imported successfully", "logger": "filesystem_mcp", "level": "info", "timestamp": "2026-02-18T16:59:18.198514Z"}
+
+
++-----------------------------------------------------------------------------+
+|                                                                             |
+|                                                                             |
+|                        \u2584\u2580\u2580 \u2584\u2580\u2588 \u2588\u2580\u2580 \u2580\u2588\u2580 \u2588\u2580\u2584\u2580\u2588 \u2588\u2580\u2580 \u2588\u2580\u2588                        |
+|                        \u2588\u2580  \u2588\u2580\u2588 \u2584\u2584\u2588  \u2588  \u2588 \u2580 \u2588 \u2588\u2584\u2584 \u2588\u2580\u2580                        |
+|                                                                             |
+|                                                                             |
+|                               FastMCP 2.14.5                                |
+|                            https://gofastmcp.com                            |
+|                                                                             |
+|                    \U0001f5a5  Server:      filesystem-mcp                           |
+|                    \U0001f680 Deploy free: https://fastmcp.cloud                    |
+|                                                                             |
++-----------------------------------------------------------------------------+
++-----------------------------------------------------------------------------+
+|                          \u2728 FastMCP 3.0 is coming!                          |
+|      Pin `fastmcp < 3` in production, then upgrade when you're ready.       |
++-----------------------------------------------------------------------------+
+
+
+{"version": "2.2.0", "event": "Filesystem MCP server starting up", "logger": "filesystem_mcp", "level": "info", "timestamp": "2026-02-18T16:59:18.219806Z"}
+{"event": "FastMCP sampling not available - advanced autonomous features disabled", "logger": "filesystem_mcp", "level": "warning", "timestamp": "2026-02-18T16:59:18.220210Z"}
+{"state_keys": ["shutdown_time", "version"], "event": "Loaded persistent state", "logger": "filesystem_mcp", "level": "info", "timestamp": "2026-02-18T16:59:18.221591Z"}
+[02/18/26 17:59:18] INFO     Starting MCP server                 server.py:2506
+                             'filesystem-mcp' with transport                   
+                             'stdio'                                           
+Starting worker 'Goliath#15008' with the following tasks:
+* trace(message: str, ...)
+* fail(message: str, ...)
+* sleep(seconds: float, ...)
+Processing request of type ListToolsRequest
+[Federation] Routing 'file_exists' -> tool 'file_ops' with payload keys: operation,path
+Processing request of type CallToolRequest
+File Result Content: [
+  {
+    "type": "text",
+    "text": "{\"success\":true,\"operation\":\"completed\",\"result\":{\"exists\":true,\"path\":\"D:\\\\Dev\\\\repos\\\\universal-actuator-mcp\\\\package.json\",\"is_file\":true,\"is_dir\":false,\"type_matches\":true,\"check_type\":\"file\"},\"timestamp\":\"2026-02-18T17:59:18.320737\",\"quality_metrics\":{},\"recommendations\":[],\"next_steps\":[\"read_file(path='package.json')\"],\"related_operations\":[]}"
+  }
+]
+
+Ô£¿ Verification Complete!
