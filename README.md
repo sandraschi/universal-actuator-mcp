@@ -74,20 +74,56 @@ Define your sub-servers in `config.json`:
 ### `universal_actuator`
 Performs an action in a specific domain.
 
--   **domain**: The target domain (`browser`, `office`, `system`)
--   **action**: The specific action to perform
-    -   *Browser*: `navigate`, `click`, `type`, `screenshot`
-    -   *Office*: `open`, `read`, `write`
-    -   *System*: `exec`, `info`
--   **payload**: JSON parameters for the action
+-   **domain**: The target domain (`files`, `browser`, `robotics`, `knowledge`, `system`, etc.)
+-   **action**: The specific action to perform (e.g., `read_file`, `status`, `info`)
+-   **payload**: JSON parameters for the action. These are forwarded directly to the sub-server.
 
-## 🤖 AI & Hardware Requirements
+### `universal_help`
+Access internal documentation and usage examples for federated domains.
 
-This server itself is a lightweight router and does **not** use local AI models. However, the **sub-servers** you configure may have their own requirements.
+-   **domain**: (Optional) Specific domain for detailed docs.
 
--   **Universal Actuator**: Minimal resources (Node.js runtime)
--   **Sub-Servers**: Check individual documentation.
-    -   *Example*: If routing to a local vision model server, a GPU (RTX 3060+) may be required.
+## 📖 Usage Examples
+
+### 1. File Management (Portmanteau Routing)
+The Actuator automatically routes specific actions to the `file_ops` or `dir_ops` tools in the `files` domain.
+
+```json
+universal_actuator(
+  domain: "files",
+  action: "read_file",
+  payload: { "path": "package.json" }
+)
+```
+
+### 2. Robotics Control
+Control both virtual and physical robots through the `robotics` domain.
+
+```json
+universal_actuator(
+  domain: "robotics",
+  action: "status",
+  payload: {}
+)
+```
+
+### 3. Knowledge Base Search
+Search the Advanced Memory knowledge base.
+
+```json
+universal_actuator(
+  domain: "knowledge",
+  action: "adn_knowledge",
+  payload: { "operation": "search", "query": "universal actuator" }
+)
+```
+
+## 🧠 .mcpb Packaging
+
+This repository follows the Anthropic **Skills** format for `.mcpb` distribution:
+- `SKILL.md`: Main manifest and usage guide.
+- `prompts/`: Standardized prompt templates for cross-domain orchestration.
+- `src/`: Core TypeScript implementation.
 
 ## 📜 License
 

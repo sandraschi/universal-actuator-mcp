@@ -181,22 +181,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 name: "universal_actuator",
                 description:
-                    "A unified interface for performing actions across various domains. " +
-                    "Reduces semantic entropy by consolidating domain-specific tools into a single entry point.",
+                    "A unified interface for performing actions across various domains.\n\n" +
+                    "This tool reduces semantic entropy by consolidating specialized domain toolsets (Files, Browser, Robotics, etc.) " +
+                    "into a single federation gateway. It intelligently routes requests to the appropriate sub-server " +
+                    "based on the specified domain.\n\n" +
+                    "Usage Examples:\n" +
+                    "- Files: { domain: 'files', action: 'list_directory', payload: { path: 'C:/repos', recursive: true } }\n" +
+                    "- Browser: { domain: 'browser', action: 'navigate', payload: { url: 'https://google.com' } }\n" +
+                    "- Knowledge: { domain: 'knowledge', action: 'adn_knowledge', payload: { operation: 'search', query: 'mcp' } }",
                 inputSchema: {
                     type: "object",
                     properties: {
                         domain: {
                             type: "string",
-                            description: "The target domain (e.g., 'files', 'browser', 'system', 'blender', 'gimp').",
+                            description: "The target domain for the action (e.g., 'files', 'browser', 'robotics', 'knowledge', 'system').",
                         },
                         action: {
                             type: "string",
-                            description: "The action to perform (e.g., 'read_file', 'snapshot', 'render').",
+                            description: "The high-level action to perform within the domain. For portmanteau tools, this is injected as the 'operation' parameter.",
                         },
                         payload: {
                             type: "object",
-                            description: "Parameters for the action.",
+                            description: "A JSON object containing the parameters required for the specific action. Keys depend on the target domain/action.",
                         },
                     },
                     required: ["domain", "action", "payload"],
@@ -204,13 +210,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             {
                 name: "universal_help",
-                description: "Get documentation and usage examples for federated domains.",
+                description:
+                    "Get comprehensive documentation and usage examples for federated domains.\n\n" +
+                    "Usage:\n" +
+                    "- Call without arguments to list all active domains.\n" +
+                    "- Pass a 'domain' to get detailed metadata, available actions, and routing heuristics for that specific domain.",
                 inputSchema: {
                     type: "object",
                     properties: {
                         domain: {
                             type: "string",
-                            description: "The target domain (e.g., 'files', 'robotics'). If omitted, lists all domains.",
+                            description: "The target domain to inspect (e.g., 'files', 'robotics'). If omitted, returns a global federation overview.",
                         },
                     },
                 },
