@@ -14,6 +14,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { readFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { execSync } from "child_process";
 
 /**
  * Universal Actuator MCP 🌐
@@ -39,6 +40,7 @@ interface ServerConfig {
     command: string;
     args: string[];
     env?: Record<string, string>;
+    githubUrl?: string; // SOTA: link to install if missing
     mappings?: Record<string, string>; // Maps high-level action to portmanteau tool name
 }
 
@@ -71,6 +73,32 @@ function loadConfig() {
         }
     }
     console.error("[Config] No config.json found. Running with empty federation table.");
+}
+
+function checkAvailability(domain: string, config: ServerConfig): { isAvailable: boolean; reason?: string } {
+    try {
+        // 1. Check if command is in PATH
+        const checkCmd = process.platform === "win32" ? `where ${config.command}` : `which ${config.command}`;
+        try {
+            execSync(checkCmd, { stdio: "ignore" });
+        } catch {
+            return { isAvailable: false, reason: `Command '${config.command}' not found in system PATH.` };
+        }
+
+        // 2. Check PYTHONPATH/env paths if they point to local repos
+        if (config.env?.PYTHONPATH) {
+            const paths = config.env.PYTHONPATH.split(process.platform === "win32" ? ";" : ":");
+            for (const p of paths) {
+                if (!existsSync(p)) {
+                    return { isAvailable: false, reason: `Dependency path missing: ${p}` };
+                }
+            }
+        }
+
+        return { isAvailable: true };
+    } catch (e) {
+        return { isAvailable: false, reason: `Availability check failed: ${e}` };
+    }
 }
 
 class FederationClient {
@@ -235,10 +263,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (name === "universal_help") {
         const { domain } = (args || {}) as any;
         if (!domain) {
+            const domainList = Object.entries(FEDERATION_CONFIG).map(([d, config]) => {
+                const { isAvailable } = checkAvailability(d, config);
+                const statusEmoji = isAvailable ? "✅" : "⚠️";
+                return `- ${statusEmoji} **${d}** ${!isAvailable && config.githubUrl ? `(Install: ${config.githubUrl})` : ""}`;
+            }).join("\n");
+
             return {
                 content: [{
                     type: "text",
-                    text: `# Universal Actuator Help 🌐\n\nConsolidating high-entropy domains into a single SOTA interface.\n\n## Configured Domains\n${Object.keys(FEDERATION_CONFIG).map(d => `- **${d}**`).join("\n")}\n\n## Usage\nUse \`universal_help(domain: "domain_name")\` for domain-specific documentation.`
+                    text: `# Universal Actuator Help 🌐\n\nConsolidating high-entropy domains into a single SOTA interface.\n\n## Configured Domains\n${domainList}\n\n## Usage\nUse \`universal_help(domain: "domain_name")\` for domain-specific documentation.`
                 }]
             };
         }
@@ -248,10 +282,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             throw new McpError(ErrorCode.InvalidParams, `Domain '${domain}' not found.`);
         }
 
+        const availability = checkAvailability(domain, config);
+
         return {
             content: [{
                 type: "text",
-                text: `# Domain: ${domain.toUpperCase()}\n\n- **Command**: \`${config.command}\`\n- **Target**: \`${config.args.join(" ")}\`\n${config.mappings ? `\n### Explicit Mappings\n${Object.entries(config.mappings).map(([k, v]) => `- \`${k}\` -> \`${v}\``).join("\n")}` : ""}\n\n### Portmanteau Support\nThis domain supports heuristic fallback to \`_ops\`, \`_system\`, \`_behavior\`, \`_tools\`, and \`_control\` patterns.`
+                text: `# Domain: ${domain.toUpperCase()}\n\n- **Status**: ${availability.isAvailable ? "✅ Installed" : `⚠️ Missing (${availability.reason})`}\n${!availability.isAvailable && config.githubUrl ? `- **Install**: ${config.githubUrl}\n` : ""}- **Command**: \`${config.command}\`\n- **Target**: \`${config.args.join(" ")}\`\n${config.mappings ? `\n### Explicit Mappings\n${Object.entries(config.mappings).map(([k, v]) => `- \`${k}\` -> \`${v}\``).join("\n")}` : ""}\n\n### Portmanteau Support\nThis domain supports heuristic fallback to \`_ops\`, \`_system\`, \`_behavior\`, \`_tools\`, and \`_control\` patterns.`
             }]
         };
     }
@@ -261,6 +297,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     const { domain, action, payload } = (args || {}) as any;
+
+    const config = FEDERATION_CONFIG[domain];
+    if (!config) {
+        throw new McpError(ErrorCode.InvalidParams, `Domain '${domain}' not found.`);
+    }
+
+    const availability = checkAvailability(domain, config);
+    if (!availability.isAvailable) {
+        return {
+            content: [{
+                type: "text",
+                text: `❌ Error: Domain '${domain}' is not available.\nReason: ${availability.reason}${config.githubUrl ? `\n\nPlease install it from: ${config.githubUrl}` : ""}`
+            }],
+            isError: true
+        };
+    }
 
     try {
         // 1. Internal Baseline Handlers
