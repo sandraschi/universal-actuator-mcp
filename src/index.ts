@@ -202,31 +202,80 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     required: ["domain", "action", "payload"],
                 },
             },
+            {
+                name: "universal_help",
+                description: "Get documentation and usage examples for federated domains.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        domain: {
+                            type: "string",
+                            description: "The target domain (e.g., 'files', 'robotics'). If omitted, lists all domains.",
+                        },
+                    },
+                },
+            },
         ],
     };
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (request.params.name !== "universal_actuator") {
-        throw new McpError(ErrorCode.MethodNotFound, "Unknown tool");
-    }
+    const { name, arguments: args } = request.params;
 
-    const { domain, action, payload } = request.params.arguments as any;
-
-    try {
-        // 1. Internal Baseline Handlers
-        if (domain === "system" && action === "info") {
+    if (name === "universal_help") {
+        const { domain } = (args || {}) as any;
+        if (!domain) {
             return {
                 content: [{
                     type: "text",
-                    text: JSON.stringify({
-                        status: "operational",
-                        philosophy: "Materialist/Reductionist",
-                        federation_count: Object.keys(FEDERATION_CONFIG).length,
-                        active_domains: Object.keys(FEDERATION_CONFIG)
-                    }, null, 2)
+                    text: `# Universal Actuator Help 🌐\n\nConsolidating high-entropy domains into a single SOTA interface.\n\n## Configured Domains\n${Object.keys(FEDERATION_CONFIG).map(d => `- **${d}**`).join("\n")}\n\n## Usage\nUse \`universal_help(domain: "domain_name")\` for domain-specific documentation.`
                 }]
             };
+        }
+
+        const config = FEDERATION_CONFIG[domain];
+        if (!config) {
+            throw new McpError(ErrorCode.InvalidParams, `Domain '${domain}' not found.`);
+        }
+
+        return {
+            content: [{
+                type: "text",
+                text: `# Domain: ${domain.toUpperCase()}\n\n- **Command**: \`${config.command}\`\n- **Target**: \`${config.args.join(" ")}\`\n${config.mappings ? `\n### Explicit Mappings\n${Object.entries(config.mappings).map(([k, v]) => `- \`${k}\` -> \`${v}\``).join("\n")}` : ""}\n\n### Portmanteau Support\nThis domain supports heuristic fallback to \`_ops\`, \`_system\`, \`_behavior\`, \`_tools\`, and \`_control\` patterns.`
+            }]
+        };
+    }
+
+    if (name !== "universal_actuator") {
+        throw new McpError(ErrorCode.MethodNotFound, "Unknown tool");
+    }
+
+    const { domain, action, payload } = (args || {}) as any;
+
+    try {
+        // 1. Internal Baseline Handlers
+        if (domain === "system") {
+            if (action === "info") {
+                return {
+                    content: [{
+                        type: "text",
+                        text: JSON.stringify({
+                            status: "operational",
+                            philosophy: "Materialist/Reductionist",
+                            federation_count: Object.keys(FEDERATION_CONFIG).length,
+                            active_domains: Object.keys(FEDERATION_CONFIG)
+                        }, null, 2)
+                    }]
+                };
+            }
+            if (action === "help") {
+                return {
+                    content: [{
+                        type: "text",
+                        text: `# Universal Actuator System Domain\n\nSupported Actions:\n- **info**: Reporting operational status and federation statistics.\n- **help**: Displays this message.`
+                    }]
+                };
+            }
         }
 
         // 2. Route to Federated Sub-Server
