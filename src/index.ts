@@ -253,12 +253,45 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     },
                 },
             },
+            {
+                name: "universal_status",
+                description:
+                    "Check the installation status and health of all federated MCP servers.\n\n" +
+                    "This tool identifies which domains are usable and provide GitHub links for installing any missing servers.",
+                inputSchema: {
+                    type: "object",
+                    properties: {},
+                },
+            },
         ],
     };
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+
+    if (name === "universal_status") {
+        const domainStatusList = Object.entries(FEDERATION_CONFIG).map(([d, config]) => {
+            const { isAvailable, reason } = checkAvailability(d, config);
+            const statusEmoji = isAvailable ? "✅" : "⚠️";
+            const statusText = isAvailable ? "Installed" : "Missing";
+            let line = `- ${statusEmoji} **${d}**: ${statusText}`;
+            if (!isAvailable) {
+                line += ` (${reason})`;
+                if (config.githubUrl) {
+                    line += ` - [Install Repository](${config.githubUrl})`;
+                }
+            }
+            return line;
+        }).join("\n");
+
+        return {
+            content: [{
+                type: "text",
+                text: `# Universal Actuator: Federation Status 📊\n\nTotal Domains Configured: ${Object.keys(FEDERATION_CONFIG).length}\n\n## Domain Health Registry\n${domainStatusList}\n\n---\n*Materialist/Reductionist Diagnostic Complete.*`
+            }]
+        };
+    }
 
     if (name === "universal_help") {
         const { domain } = (args || {}) as any;

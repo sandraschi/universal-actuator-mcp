@@ -43,6 +43,10 @@ The primary gateway for performing actions.
 Access internal documentation and usage examples.
 - **domain**: Specific domain for detailed docs, or omit for a global overview.
 
+### `universal_status`
+Check the installation status and health of all federated sub-servers.
+Provides direct GitHub installation links for any missing components.
+
 ## Usage Examples
 
 ### Listing Directories

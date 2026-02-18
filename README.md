@@ -83,6 +83,10 @@ Access internal documentation and usage examples for federated domains.
 
 -   **domain**: (Optional) Specific domain for detailed docs.
 
+### `universal_status`
+Check the installation status and health of all federated sub-servers.
+Lists usable domains and provides GitHub links for remediation of missing ones.
+
 ## 📖 Usage Examples
 
 ### 1. File Management (Portmanteau Routing)
