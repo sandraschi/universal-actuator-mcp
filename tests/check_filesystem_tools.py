@@ -1,5 +1,6 @@
 import asyncio
 import os
+
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -16,7 +17,7 @@ async def check_tools():
         },
     )
 
-    print(f"Connecting to filesystem-mcp...")
+    print("Connecting to filesystem-mcp...")
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()

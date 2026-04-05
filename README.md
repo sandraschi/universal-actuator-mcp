@@ -1,134 +1,185 @@
-# Universal Actuator MCP 🌐
+# Universal Actuator MCP Hub (Federation Gateway)
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
-[![MCP SDK](https://img.shields.io/badge/MCP_SDK-1.26.0-green)](https://modelcontextprotocol.io)
-[![Status](https://img.shields.io/badge/Status-BETA-orange)](README.md)
-[![Federation](https://img.shields.io/badge/Pattern-Federation_Facade-purple)](README.md#architecture)
+> **Federated consumption router and live-dashboard hub for the RoboFang fleet (Plex, Calibre, Immich).**
 
-**A materialist/reductionist facade that consolidates high-entropy toolsets into a single, unified interface.**
+[![FastMCP](https://img.shields.io/badge/FastMCP-3.1.1-blue)](https://github.com/jlowin/fastmcp)
+[![Vite](https://img.shields.io/badge/Vite-6-purple)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
+[![Port](https://img.shields.io/badge/Backend-10745-orange)](http://localhost:10745)
+[![Port](https://img.shields.io/badge/Frontend-10744-green)](http://localhost:10744)
+[![Status](https://img.shields.io/badge/Status-v2.0.0-emerald)]()
 
-This server acts as a **Federation Router**, accepting a universal action schema and routing it to appropriate domain-specific sub-servers (like `browser-mcp`, `office-mcp`, etc.).
+---
 
-## 🏗️ Architecture
+## Overview
 
-Instead of exposing 50+ individual tools to an LLM (increasing cognitive load and semantic entropy), this server exposes **ONE** tool: `universal_actuator`.
+The Universal Actuator Hub is a **Federation Gateway** refactored to serve as the discovery and routing layer for the wider **RoboFang** fleet. It acts as the "Command & Control" center for the 15+ node ecosystem.
 
-```typescript
-// The Universal Interface
-universal_actuator({
-  domain: "browser",  // or "office", "system"
-  action: "navigate", // or "click", "type", etc.
-  payload: { url: "https://example.com" }
-})
+- **Federated Search**: Aggregating results from Plex, Calibre, and Immich concurrently.
+- **Fleet Discovery**: Real-time monitoring of all nodes in the 10700-10800+ port range.
+- **Milestone Tracking**: Unified logging of agentic accomplishments.
+- **SOTA UI/UX**: Premium dashboard built with React 19, Tailwind CSS, and Radix UI.
+
+### Actuator Domains (15+ Nodes)
+
+| Domain | Integrated Services |
+|--------|---------------------|
+| **Infrastructure** | Filesystem, Windows Operations (WinOps), Virtualization (VirtOps), Browser (Playwright) |
+| **Knowledge** | Advanced Memory (adn), DocsOps (Central Docs), FastSearch |
+| **Media** | Plex, Calibre, Immich |
+| **Creative** | Blender, GIMP, Inkscape |
+| **Robotics** | Robotics-MCP, OSC, Unity3D, VRChat, Avatar |
+
+| Layer | Stack | Port | Purpose |
+|-------|-------|------|---------|
+| **MCP Backend** | FastMCP 3.1 + Python | `10745` (`sse`) | MCP tools + REST API Gateway |
+| **Web Dashboard** | Vite + React 19 + Tailwind | `10744` | Live fleet monitoring & control |
+
+The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoints** (for the frontend dashboard) via a single FastMCP `mcp.http_app` ASGI application.
+
+---
+
+## Architecture
+
 ```
 
-The server then:
-1.  Identifies the target `domain`
-2.  Spawns/Connects to the configured Sub-MCP Server for that domain
-3.  Translates/Forwards the request
-4.  Returns the result
+                       Universal Actuator Federation Gateway              
+               (FastMCP 3.1 | src/universal_actuator_mcp/server.py)       
+                                                                         
+  MCP Tools (Agentic)            REST API (Dashboard)                    
+                                  
+  search_all (federated)         GET  /api/v1/health                     
+  glom_on (discovery)            GET  /api/v1/glom_on                    
+  universal_milestone            GET  /telemetry                         
+  get_fleet_telemetry            GET  /milestones                        
+                                                                         
+  Actuator Fan-out (15+ Nodes)   Downstream Transports                   
+                        
+  Infrastructure (WinOps/FS)     stdio (sub-process spawn)               
+  Knowledge (Memory/Docs)        stdio (sub-process spawn)               
+  Media (Calibre/Plex/Immich)    stdio (sub-process spawn)               
+  Robotics (OSC/Unity)           udp/stdio                               
 
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-npm install
-npm run build
+                          SSE / REST (localhost:10745)
+              
+                  Vite Frontend    
+                 localhost:10744    
+                                   
+                /           Dashboard + live telemetry
+                /status     Federation health & node status
+                /library    Federated media browser
+                /tools      GrokTools catalog
+                /settings   Gateway configuration
+              
 ```
 
-### Configuration (`config.json`)
+---
 
-Define your sub-servers in `config.json`:
+## MCP Tools
 
-```json
-{
-  "servers": {
-    "browser": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
-    },
-    "system": {
-      "command": "python",
-      "args": ["-m", "windows_operations_mcp"]
-    }
-  }
-}
+### Federated Search & Discovery
+| Tool | Description |
+|------|-------------|
+| `search_federated(query, domain)` | Parallel fan-out search across Calibre, Plex, Immich, and Memory nodes. |
+| `glom_on()` | Auto-discover and register all active MCP servers in port range 1070010900. |
+| `get_fleet_telemetry()` | Real-time CPU, memory, active node count, and host uptime. |
+
+### RAG & Semantic Analysis
+| Tool | Description |
+|------|-------------|
+| `rag_semantic_search(query, limit, source)` | High-precision vector search via LanceDB (all-MiniLM-L6-v2). |
+| `ingest_fleet_to_rag()` | Bulk-populate the vector index from all discovered media sources. |
+| `rag_stats()` / `rag_clear()` | Monitor index health or perform a fresh index rebuild. |
+
+### Milestone & Agentic Workflow
+| Tool | Description |
+|------|-------------|
+| `agentic_workflow_tool(goal)` | [SEP-1577] Autonomous multi-step orchestration via `ctx.sample()`. |
+| `universal_milestone(title, description, type)` | Log a persistent milestone to the centralized fleet audit trail. |
+| `get_milestones_history()` | Retrieve the full historical record of agentic accomplishments. |
+
+---
+
+## REST Endpoints (Internal Gateway)
+
+All internal endpoints are served via `mcp.http_app` on `http://localhost:10745`:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/health` | Gateway health check + RAG stats |
+| `GET` | `/api/v1/glom_on` | Returns JSON of all auto-discovered fleet nodes |
+| `GET` | `/telemetry` | Real-time host and federation metrics |
+| `GET` | `/milestones` | JSON log of all fleet-wide accomplishments |
+
+---
+
+## Startup & Deployment
+
+### Automated Launch
+The project includes a robust PowerShell orchestration script that clears port squatters and launches both the backend and frontend.
+
+```powershell
+# Run from the project root:
+.\start.ps1
 ```
 
-### Usage with Claude/Antigravity
+### Manual Individual Launch
+**Backend (FastMCP SSE)**:
+```powershell
+uv run uvicorn universal_actuator_mcp.server:mcp.http_app --host 127.0.0.1 --port 10745
+```
 
+**Frontend (Vite Dev)**:
+```powershell
+cd webapp; npm run dev
+```
+
+### IDE Configuration (Antigravity)
+Add this to your `mcp_config.json`:
 ```json
 {
   "mcpServers": {
     "universal-actuator": {
-      "command": "node",
-      "args": ["path/to/universal-actuator-mcp/dist/index.js"]
+      "command": "uv",
+      "args": ["--directory", "D:/Dev/repos/universal-actuator-mcp", "run", "uvicorn", "universal_actuator_mcp.server:mcp.http_app", "--host", "127.0.0.1", "--port", "10745"],
+      "cwd": "D:/Dev/repos/universal-actuator-mcp"
     }
   }
 }
 ```
 
-## 🛠️ Tools
+---
 
-### `universal_actuator`
-Performs an action in a specific domain.
+## Dashboard Routing
 
--   **domain**: The target domain (`files`, `browser`, `robotics`, `knowledge`, `system`, etc.)
--   **action**: The specific action to perform (e.g., `read_file`, `status`, `info`)
--   **payload**: JSON parameters for the action. These are forwarded directly to the sub-server.
+| Page | Route | Data Source |
+|------|-------|-------------|
+| **Dashboard** | `/` | Aggregated telemetry and milestone feed |
+| **Status** | `/status` | Real-time node status and federation health cards |
+| **Library** | `/library` | Federated asset search across Calibre, Plex, and Immich |
+| **Apps Hub** | `/apps` | Fleet-wide app launcher and discovery grid |
+| **GrokTools** | `/tools` | Dynamic MCP tool schema analyzer |
+| **Settings** | `/settings` | Config manager for downstream servers |
 
-### `universal_help`
-Access internal documentation and usage examples for federated domains.
+---
 
--   **domain**: (Optional) Specific domain for detailed docs.
+## Development
 
-### `universal_status`
-Check the installation status and health of all federated sub-servers.
-Lists usable domains and provides GitHub links for remediation of missing ones.
+- **Architecture**: Materialist & Reductionist design. Data constitutes the only reality.
+- **Frontend**: React 19 with Lucide icons and Framer Motion transitions.
+- **Backend**: FastMCP 3.1 with async `stdio` client orchestration and **LanceDB RAG**.
+- **Agentic Logic**: SEP-1577 "Plan-Execute-Audit" workflows via `ctx.sample()`.
 
-## 📖 Usage Examples
+---
 
-### 1. File Management (Portmanteau Routing)
-The Actuator automatically routes specific actions to the `file_ops` or `dir_ops` tools in the `files` domain.
+## Technical Debt & Roadmap
+- [ ] Implement secure `HTTPS` transport for remote federation access.
+- [ ] Add `GPU` telemetry monitoring for RTX 4090 performance tracking.
+- [ ] Expand `Glom On` to include auto-discovery of local LLM endpoints (Ollama).
 
-```json
-universal_actuator(
-  domain: "files",
-  action: "read_file",
-  payload: { "path": "package.json" }
-)
-```
+---
 
-### 2. Robotics Control
-Control both virtual and physical robots through the `robotics` domain.
+See [CHANGELOG.md](./CHANGELOG.md) for version history.
 
-```json
-universal_actuator(
-  domain: "robotics",
-  action: "status",
-  payload: {}
-)
-```
-
-### 3. Knowledge Base Search
-Search the Advanced Memory knowledge base.
-
-```json
-universal_actuator(
-  domain: "knowledge",
-  action: "adn_knowledge",
-  payload: { "operation": "search", "query": "universal actuator" }
-)
-```
-
-## 🧠 .mcpb Packaging
-
-This repository follows the Anthropic **Skills** format for `.mcpb` distribution:
-- `SKILL.md`: Main manifest and usage guide.
-- `prompts/`: Standardized prompt templates for cross-domain orchestration.
-- `src/`: Core TypeScript implementation.
-
-## 📜 License
-
-MIT
+*Built with Agentic Precision for the RoboFang Fleet.*
+*Maintainer: [sandraschi](https://github.com/sandraschi)*

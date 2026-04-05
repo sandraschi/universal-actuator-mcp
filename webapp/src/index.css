@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer utilities {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(222, 47%, 12%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(217, 33%, 17%, 1) 0, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  .glass {
+    @apply border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-300;
+  }
+
+  .glass-dark {
+    @apply border border-white/5 bg-black/40 backdrop-blur-2xl transition-all duration-300;
+  }
+
+  .progress-bar-p0 { width: 0%; }
+  .progress-bar-p5 { width: 5%; }
+  .progress-bar-p10 { width: 10%; }
+  .progress-bar-p15 { width: 15%; }
+  .progress-bar-p20 { width: 20%; }
+  .progress-bar-p25 { width: 25%; }
+  .progress-bar-p30 { width: 30%; }
+  .progress-bar-p35 { width: 35%; }
+  .progress-bar-p40 { width: 40%; }
+  .progress-bar-p45 { width: 45%; }
+  .progress-bar-p50 { width: 50%; }
+  .progress-bar-p55 { width: 55%; }
+  .progress-bar-p60 { width: 60%; }
+  .progress-bar-p65 { width: 65%; }
+  .progress-bar-p70 { width: 70%; }
+  .progress-bar-p75 { width: 75%; }
+  .progress-bar-p80 { width: 80%; }
+  .progress-bar-p85 { width: 85%; }
+  .progress-bar-p90 { width: 90%; }
+  .progress-bar-p95 { width: 95%; }
+  .progress-bar-p100 { width: 100%; }
+}

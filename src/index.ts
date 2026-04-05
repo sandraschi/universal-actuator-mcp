@@ -9,6 +9,8 @@ import {
     ListToolsResultSchema,
     McpError,
 } from "@modelcontextprotocol/sdk/types.js";
+import { FastMCP } from "fastmcp";
+import { z } from "zod";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { readFileSync, existsSync } from "fs";
@@ -18,23 +20,50 @@ import { execSync } from "child_process";
 
 /**
  * Universal Actuator MCP 🌐
- * 
+ *
  * A materialist/reductionist facade that consolidates high-entropy toolsets
  * into a single, unified interface. Supports federating requests to sub-MCP servers
  * with intelligent portmanteau routing.
  */
 
-const server = new Server(
-    {
-        name: "universal-actuator-mcp",
-        version: "1.0.0",
-    },
-    {
-        capabilities: {
-            tools: {},
-        },
+interface ICognitiveBridge {
+    logMilestone(title: string, content: string, tags?: string[]): Promise<void>;
+    snapshotProgress(task: string, status: string): Promise<void>;
+}
+
+class CognitiveBridge implements ICognitiveBridge {
+    async logMilestone(title: string, content: string, tags: string[] = []) {
+        console.error(`[CognitiveBridge] Milestone: ${title}`);
+        const memServer = Object.keys(FEDERATION_CONFIG).find(name => name.includes("mem") || name.includes("adn"));
+        if (memServer) {
+            await FLEET.executeTool(memServer, "adn_content", {
+                operation: "write",
+                title: `Milestone: ${title}`,
+                content: content,
+                tags: ["#milestone", ...tags].join(",")
+            });
+        }
     }
-);
+
+    async snapshotProgress(task: string, status: string) {
+        console.error(`[CognitiveBridge] Progress: ${task} -> ${status}`);
+        const memServer = Object.keys(FEDERATION_CONFIG).find(name => name.includes("mem") || name.includes("adn"));
+        if (memServer) {
+            await FLEET.executeTool(memServer, "adn_content", {
+                operation: "quick",
+                content: `Task: ${task}\nStatus: ${status}`,
+                tags: "#progress-log"
+            });
+        }
+    }
+}
+
+const BRIDGE = new CognitiveBridge();
+
+const server = new FastMCP({
+    name: "universal-actuator-mcp",
+    version: "1.0.0",
+});
 
 interface ServerConfig {
     command: string;
@@ -48,12 +77,71 @@ interface Config {
     servers?: Record<string, ServerConfig>;
 }
 
+/**
+ * Metadata for tracking the state of the federation hub.
+ */
 let FEDERATION_CONFIG: Record<string, ServerConfig> = {};
+
+class FleetAggregator {
+    private federatedClients: Record<string, FederationClient> = {};
+
+    async executeTool(domain: string, action: string, payload: any) {
+        if (!FEDERATION_CONFIG[domain]) {
+            throw new McpError(ErrorCode.InvalidParams, `Domain '${domain}' not found in federation config.`);
+        }
+
+        if (!this.federatedClients[domain]) {
+            const { isAvailable, reason } = checkAvailability(domain, FEDERATION_CONFIG[domain]);
+            if (!isAvailable) {
+                throw new McpError(ErrorCode.InternalError, `Domain '${domain}' is not available: ${reason}`);
+            }
+            this.federatedClients[domain] = new FederationClient(domain, FEDERATION_CONFIG[domain]);
+        }
+
+        return this.federatedClients[domain].executeTool(action, payload);
+    }
+
+    async closeAll() {
+        for (const client of Object.values(this.federatedClients)) {
+            await client.close();
+        }
+        this.federatedClients = {};
+    }
+}
+
+const FLEET = new FleetAggregator();
+
+/**
+ * Universal Tool: universal_milestone
+ * Purpose: Synchronize major progress milestones to the Advanced Memory (memops).
+ */
+server.tool(
+    "universal_milestone",
+    {
+        title: z.string().describe("The title of the milestone"),
+        content: z.string().describe("Detailed description of the milestone"),
+        tags: z.array(z.string()).optional().describe("Semantic tags (e.g., #milestone, #architecture)"),
+    },
+    async ({ title, content, tags = [] }) => {
+        try {
+            await BRIDGE.logMilestone(title, content, tags);
+            return {
+                content: [{ type: "text", text: `Milestone "${title}" successfully bridged to Advanced Memory.` }],
+            };
+        } catch (error) {
+            return {
+                content: [{ type: "text", text: `Failed to bridge milestone: ${error}` }],
+                isError: true,
+            };
+        }
+    }
+);
 
 function loadConfig() {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
 
+    // 1. Explicit Local Configs
     const paths = [
         join(process.cwd(), "config.json"),
         join(__dirname, "..", "config.json"),
@@ -64,15 +152,48 @@ function loadConfig() {
         try {
             if (existsSync(configPath)) {
                 const config = JSON.parse(readFileSync(configPath, "utf-8")) as Config;
-                FEDERATION_CONFIG = config.servers || {};
-                console.error(`[Config] Loaded configuration from ${configPath}`);
-                return;
+                FEDERATION_CONFIG = { ...FEDERATION_CONFIG, ...(config.servers || {}) };
+                console.error(`[Config] Loaded local configuration from ${configPath}`);
             }
         } catch (error) {
             console.error(`[Config] Error reading ${configPath}: ${error}`);
         }
     }
-    console.error("[Config] No config.json found. Running with empty federation table.");
+
+    // 2. "Glom On" Auto-Discovery (SOTA Integration)
+    const userProfile = process.env.USERPROFILE || "";
+    const appData = process.env.APPDATA || "";
+
+    const discoveryPaths = [
+        { name: "Antigravity", path: join(userProfile, ".gemini", "antigravity", "mcp_config.json"), key: "mcpServers" },
+        { name: "Claude Desktop", path: join(appData, "Claude", "claude_desktop_config.json"), key: "mcpServers" }
+    ];
+
+    for (const discovery of discoveryPaths) {
+        try {
+            if (existsSync(discovery.path)) {
+                console.error(`[Discovery] Glomming onto ${discovery.name} at ${discovery.path}`);
+                const content = JSON.parse(readFileSync(discovery.path, "utf-8"));
+                const servers = content[discovery.key] || {};
+
+                // Convert common format to our Federation format
+                for (const [name, srv] of Object.entries(servers)) {
+                    const server = srv as any;
+                    if (!FEDERATION_CONFIG[name]) {
+                        FEDERATION_CONFIG[name] = {
+                            command: server.command,
+                            args: server.args || [],
+                            env: server.env || {}
+                        };
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(`[Discovery] Failed to glom onto ${discovery.name}: ${error}`);
+        }
+    }
+
+    console.error(`[Config] Federation table initialized with ${Object.keys(FEDERATION_CONFIG).length} domains.`);
 }
 
 function checkAvailability(domain: string, config: ServerConfig): { isAvailable: boolean; reason?: string } {
@@ -134,7 +255,7 @@ class FederationClient {
         return this.client;
     }
 
-    async callTool(action: string, payload: any) {
+    async executeTool(action: string, payload: any) {
         const client = await this.connect();
 
         // 1. Resolve Tool Mapping (support portmanteau servers)
@@ -388,7 +509,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             federatedClients[domain] = client;
         }
 
-        return await client.callTool(action, payload);
+        return await client.executeTool(action, payload);
 
     } catch (error) {
         console.error(`[Universal Actuator] Error in domain '${domain}': ${error}`);

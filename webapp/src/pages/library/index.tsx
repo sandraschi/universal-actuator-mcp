@@ -1,0 +1,202 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Search, Book, Film, Image as ImageIcon, Play, MoreVertical, RefreshCw, AlertCircle } from 'lucide-react';
+
+const BACKEND = 'http://localhost:10857';
+
+interface LibraryItem {
+    title: string;
+    source: 'Plex' | 'Calibre' | 'Immich';
+    type: 'media' | 'books' | 'photos';
+    details?: string;
+    thumbnail?: string;
+}
+
+const MediaLibrary = () => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeFilter, setActiveFilter] = useState('all');
+    const [items, setItems] = useState<LibraryItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchLibrary = useCallback(async (query = '', domain = 'all') => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (query) params.set('q', query);
+            if (domain !== 'all') params.set('domain', domain);
+            const res = await fetch(`${BACKEND}/library?${params.toString()}`);
+            if (!res.ok) throw new Error(`Backend returned ${res.status}`);
+            const data = await res.json();
+            setItems(data.items ?? []);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Backend unreachable');
+            // Graceful fallback: show empty state, not crash
+            setItems([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Initial load
+    useEffect(() => {
+        fetchLibrary();
+    }, [fetchLibrary]);
+
+    // Re-fetch when filter changes (debounce search separately)
+    useEffect(() => {
+        const tid = setTimeout(() => {
+            fetchLibrary(searchQuery, activeFilter);
+        }, 300);
+        return () => clearTimeout(tid);
+    }, [searchQuery, activeFilter, fetchLibrary]);
+
+    const sourceColor = (source: string) => {
+        if (source === 'Plex') return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+        if (source === 'Calibre') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+        return 'bg-teal-500/20 text-teal-400 border-teal-500/30';
+    };
+
+    return (
+        <div className="p-8 space-y-8 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+                        Media Library
+                    </h1>
+                    <p className="text-white/50 text-sm mt-1">Federated asset discovery across the grid.</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search federated grid..."
+                            className="pl-10 pr-4 py-2 bg-gray-900/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 w-64 transition-all text-white/90"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <button
+                        title="Refresh library"
+                        onClick={() => fetchLibrary(searchQuery, activeFilter)}
+                        className="p-2.5 bg-gray-900/50 border border-white/10 rounded-xl hover:bg-gray-800/50 transition-all"
+                    >
+                        <RefreshCw className={`w-5 h-5 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                </div>
+            </div>
+
+    {/* Filter tabs */ }
+    < div className = "flex gap-2 p-1 bg-black/20 rounded-2xl w-fit border border-white/5" >
+    {
+        [
+        { id: 'all', label: 'All Assets', icon: ImageIcon },
+        { id: 'media', label: 'Movies & TV', icon: Film },
+        { id: 'books', label: 'E-Books', icon: Book },
+        { id: 'photos', label: 'Gallery', icon: ImageIcon },
+                ].map(filter => (
+            <button
+                key={filter.id}
+                onClick={() => setActiveFilter(filter.id)}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all ${activeFilter === filter.id
+                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+            >
+                <filter.icon className="w-4 h-4" />
+                <span className="font-medium">{filter.label}</span>
+            </button>
+        ))
+    }
+            </div >
+
+    {/* Error banner */ }
+{
+    error && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>Backend error: {error}. Showing empty state — start the backend on port 10855 to load real data.</span>
+        </div>
+    )
+}
+
+{/* Grid */ }
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {loading ? (
+        Array(8).fill(0).map((_, i) => (
+            <div key={i} className="rounded-3xl bg-gray-900/40 border border-white/10 overflow-hidden animate-pulse">
+                <div className="aspect-[16/9] bg-gray-800" />
+                <div className="p-5 space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-3/4" />
+                    <div className="h-3 bg-gray-800 rounded w-1/2" />
+                </div>
+            </div>
+        ))
+    ) : items.length === 0 ? (
+        <div className="col-span-full flex flex-col items-center justify-center py-24 text-gray-500">
+            <ImageIcon className="w-16 h-16 mb-4 opacity-20" />
+            <p className="text-lg font-medium">No items found</p>
+            <p className="text-sm mt-1 opacity-60">
+                {error ? 'Backend offline — start the server and refresh.' : 'Try a different search or filter.'}
+            </p>
+        </div>
+    ) : (
+        items.map((item, idx) => (
+            <div
+                key={idx}
+                className="group relative flex flex-col bg-gray-900/40 border border-white/10 rounded-3xl overflow-hidden hover:border-blue-500/30 transition-all hover:-translate-y-1"
+            >
+                <div className="aspect-[16/9] bg-gray-800 relative overflow-hidden">
+                    {item.thumbnail ? (
+                        <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                            {item.type === 'books' ? <Book className="w-16 h-16" /> :
+                                item.type === 'photos' ? <ImageIcon className="w-16 h-16" /> :
+                                    <Film className="w-16 h-16" />}
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
+                    <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button title="Play" className="p-2 bg-black/50 backdrop-blur-md rounded-lg border border-white/10 hover:bg-blue-500 transition-colors">
+                            <Play className="w-4 h-4 fill-white text-white" />
+                        </button>
+                        <button title="More options" className="p-2 bg-black/50 backdrop-blur-md rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                            <MoreVertical className="w-4 h-4 text-white" />
+                        </button>
+                    </div>
+                    <div className="absolute bottom-4 left-4 z-20">
+                        <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider border ${sourceColor(item.source)}`}>
+                            {item.source}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="p-5 space-y-2">
+                    <h3 className="font-semibold text-lg text-white group-hover:text-blue-400 transition-colors truncate">
+                        {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">{item.details}</p>
+                </div>
+            </div>
+        ))
+    )}
+
+    {/* Add new asset CTA */}
+    {!loading && (
+        <button className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl p-8 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all text-gray-500 hover:text-blue-400">
+            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-4">
+                <ImageIcon className="w-6 h-6" />
+            </div>
+            <span className="font-medium">Ingest New Folder</span>
+            <p className="text-xs mt-1 opacity-60">Auto-glom active</p>
+        </button>
+    )}
+</div>
+        </div >
+    );
+};
+
+export default MediaLibrary;
