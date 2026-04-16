@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Book, Film, Image as ImageIcon, Play, MoreVertical, RefreshCw, AlertCircle } from 'lucide-react';
 
-const BACKEND = 'http://localhost:10857';
+const BACKEND = 'http://localhost:10745';
 
 interface LibraryItem {
     title: string;
-    source: 'Plex' | 'Calibre' | 'Immich';
-    type: 'media' | 'books' | 'photos';
+    source: 'Plex' | 'Calibre' | 'Immich' | 'DocsOps' | 'Knowledge' | string;
+    type: 'media' | 'books' | 'photos' | 'doc' | string;
     details?: string;
     thumbnail?: string;
 }
@@ -16,6 +16,7 @@ const MediaLibrary = () => {
     const [activeFilter, setActiveFilter] = useState('all');
     const [items, setItems] = useState<LibraryItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const fetchLibrary = useCallback(async (query = '', domain = 'all') => {
@@ -38,6 +39,23 @@ const MediaLibrary = () => {
         }
     }, []);
 
+    const triggerSync = async () => {
+        setIsSyncing(true);
+        setError(null);
+        try {
+            const res = await fetch(`${BACKEND}/library/ingest`, { method: 'POST' });
+            if (!res.ok) throw new Error(`Sync failed: ${res.status}`);
+            const data = await res.json();
+            console.log('Sync results:', data);
+            // Refresh library after sync
+            await fetchLibrary(searchQuery, activeFilter);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Sync failed');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     // Initial load
     useEffect(() => {
         fetchLibrary();
@@ -52,9 +70,13 @@ const MediaLibrary = () => {
     }, [searchQuery, activeFilter, fetchLibrary]);
 
     const sourceColor = (source: string) => {
-        if (source === 'Plex') return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-        if (source === 'Calibre') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-        return 'bg-teal-500/20 text-teal-400 border-teal-500/30';
+        const s = source.toLowerCase();
+        if (s === 'plex') return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+        if (s === 'calibre') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+        if (s === 'immich') return 'bg-teal-500/20 text-teal-400 border-teal-500/30';
+        if (s === 'docsops') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+        if (s === 'knowledge') return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     };
 
     return (
@@ -84,6 +106,17 @@ const MediaLibrary = () => {
                         className="p-2.5 bg-gray-900/50 border border-white/10 rounded-xl hover:bg-gray-800/50 transition-all"
                     >
                         <RefreshCw className={`w-5 h-5 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                        onClick={triggerSync}
+                        disabled={isSyncing}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${isSyncing 
+                            ? 'bg-blue-600/10 border-blue-500/20 text-blue-400 cursor-not-allowed' 
+                            : 'bg-blue-600/20 border-blue-500/30 text-blue-400 hover:bg-blue-600/30 hover:shadow-[0_0_20px_rgba(37,99,235,0.2)]'
+                        }`}
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                        <span className="font-semibold text-sm">Sync Grid</span>
                     </button>
                 </div>
             </div>
@@ -117,7 +150,7 @@ const MediaLibrary = () => {
     error && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>Backend error: {error}. Showing empty state — start the backend on port 10855 to load real data.</span>
+            <span>Backend error: {error}. Showing empty state — start the backend on port 10745 to load real data.</span>
         </div>
     )
 }

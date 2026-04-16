@@ -12,4 +12,10 @@ src/universal_actuator_mcp.egg-info/SOURCES.txt
 src/universal_actuator_mcp.egg-info/dependency_links.txt
 src/universal_actuator_mcp.egg-info/requires.txt
 src/universal_actuator_mcp.egg-info/top_level.txt
-src/universal_actuator_mcp/routers/consumption.py
+src/universal_actuator_mcp/routers/media.py
+tests/test_agentic.py
+tests/test_aggregator.py
+tests/test_fleet.py
+tests/test_rag.py
+tests/test_server.py
+tests/test_tools.py

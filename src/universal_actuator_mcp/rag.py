@@ -5,6 +5,7 @@ Provides semantic vector search over federated media metadata (Calibre, Plex, Im
 Uses sentence-transformers (all-MiniLM-L6-v2) when available; falls back to
 deterministic hash-embeddings so the index still functions for FTS-style proximity.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -47,7 +48,8 @@ class LanceDBRag:
 
     def _hash_embed(self, text: str) -> list[float]:
         """Deterministic pseudo-embedding from MD5 — fallback when no model loaded."""
-        seed = int(hashlib.md5(text.lower().encode()).hexdigest(), 16)
+        # MD5 is used here for deterministic pseudo-embeddings, not for security.
+        seed = int(hashlib.md5(text.lower().encode()).hexdigest(), 16)  # noqa: S324
         vec: list[float] = []
         for i in range(EMBED_DIM):
             val = float((seed >> (i % 64)) & 0xFF) - 127.5
@@ -66,17 +68,19 @@ class LanceDBRag:
         return await loop.run_in_executor(None, self._embed, text)
 
     def _make_schema(self) -> Any:
-        import pyarrow as pa  # noqa: PLC0415
+        import pyarrow as pa
 
-        return pa.schema([
-            pa.field("id", pa.string()),
-            pa.field("title", pa.string()),
-            pa.field("author", pa.string()),
-            pa.field("source", pa.string()),
-            pa.field("item_type", pa.string()),
-            pa.field("metadata_json", pa.string()),
-            pa.field("vector", pa.list_(pa.float32(), EMBED_DIM)),
-        ])
+        return pa.schema(
+            [
+                pa.field("id", pa.string()),
+                pa.field("title", pa.string()),
+                pa.field("author", pa.string()),
+                pa.field("source", pa.string()),
+                pa.field("item_type", pa.string()),
+                pa.field("metadata_json", pa.string()),
+                pa.field("vector", pa.list_(pa.float32(), EMBED_DIM)),
+            ]
+        )
 
     # ------------------------------------------------------------------
     # Public API
@@ -87,19 +91,17 @@ class LanceDBRag:
         Initialize LanceDB connection, optionally load sentence-transformers,
         and open (or create) the media_items table.
         """
-        import lancedb  # noqa: PLC0415
+        import lancedb
 
         self.db_path.mkdir(parents=True, exist_ok=True)
         self._db = lancedb.connect(str(self.db_path))
 
         # Try sentence-transformers; fail gracefully
         try:
-            from sentence_transformers import SentenceTransformer  # noqa: PLC0415
+            from sentence_transformers import SentenceTransformer
 
             loop = asyncio.get_event_loop()
-            self._embedder = await loop.run_in_executor(
-                None, SentenceTransformer, "all-MiniLM-L6-v2"
-            )
+            self._embedder = await loop.run_in_executor(None, SentenceTransformer, "all-MiniLM-L6-v2")
             self._embed_model_name = "all-MiniLM-L6-v2"
             logger.info("RAG: SentenceTransformer loaded (384-dim vectors).")
         except ImportError:
@@ -132,22 +134,29 @@ class LanceDBRag:
 
         rows = []
         for item in items:
-            text = " ".join(filter(None, [
-                item.get("title", ""),
-                item.get("author", ""),
-                item.get("source", ""),
-                item.get("type", ""),
-            ]))
+            text = " ".join(
+                filter(
+                    None,
+                    [
+                        item.get("title", ""),
+                        item.get("author", ""),
+                        item.get("source", ""),
+                        item.get("type", ""),
+                    ],
+                )
+            )
             vector = await self._async_embed(text)
-            rows.append({
-                "id": str(item.get("id", "")),
-                "title": str(item.get("title", "")),
-                "author": str(item.get("author", "") or ""),
-                "source": str(item.get("source", "")),
-                "item_type": str(item.get("type", "")),
-                "metadata_json": json.dumps(item.get("metadata", {})),
-                "vector": vector,
-            })
+            rows.append(
+                {
+                    "id": str(item.get("id", "")),
+                    "title": str(item.get("title", "")),
+                    "author": str(item.get("author", "") or ""),
+                    "source": str(item.get("source", "")),
+                    "item_type": str(item.get("type", "")),
+                    "metadata_json": json.dumps(item.get("metadata", {})),
+                    "vector": vector,
+                }
+            )
 
         if rows:
             self._table.add(rows)
@@ -192,15 +201,17 @@ class LanceDBRag:
                 metadata = json.loads(row.get("metadata_json", "{}"))
             except (json.JSONDecodeError, TypeError):
                 metadata = {}
-            results.append({
-                "id": row["id"],
-                "title": row["title"],
-                "author": row["author"],
-                "source": row["source"],
-                "type": row["item_type"],
-                "metadata": metadata,
-                "_score": float(row.get("_distance", 0.0)),
-            })
+            results.append(
+                {
+                    "id": row["id"],
+                    "title": row["title"],
+                    "author": row["author"],
+                    "source": row["source"],
+                    "type": row["item_type"],
+                    "metadata": metadata,
+                    "_score": float(row.get("_distance", 0.0)),
+                }
+            )
 
         return results
 

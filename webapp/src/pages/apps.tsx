@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Grid, Loader2, CheckCircle2, AlertCircle, Terminal } from 'lucide-react';
 import { APPS_CATALOG, AppEntry } from '../common/apps-catalog';
 
-const BACKEND = 'http://localhost:10857';
+const BACKEND = 'http://localhost:10745';
 
 type LaunchStatus = 'idle' | 'launching' | 'launched' | 'no_script' | 'error';
 

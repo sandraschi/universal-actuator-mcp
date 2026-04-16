@@ -7,6 +7,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.1.0] — 2026-04-11
+
+### Added
+- Standardized `universal_actuator` portmanteau tool per SOTA v14.1.
+- Standardized `universal_status` health monitoring.
+- Root `/` REST endpoint for availability verification.
+- `/telemetry` REST endpoint for real-time fleet analytics.
+
+### Changed
+- Migrated to **FastMCP 3.2.3** (SOTA reductionist standard).
+- Hardened REST routes to resolve 404 synchronization errors.
+- Refactored `FleetManager` for reductionist alignment.
+- Updated `justfile` with operational industrial recipes.
+
 ## [2.0.0] — 2026-03-30
 
 ### 🧠 Modern AI & Vector RAG (March 2026 SOTA)

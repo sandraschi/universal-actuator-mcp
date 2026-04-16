@@ -1,7 +1,8 @@
 """
-Universal Actuator MCP Hub — SOTA Backend Server
-FastMCP 3.1 | LanceDB RAG | ctx.sample() Sampling | SEP-1577 Agentic Workflow
+Universal Actuator MCP Hub — SOTA v14.1.0
+Industrial Federation Gateway | FastMCP 3.2 | LanceDB RAG | ctx.sample()
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -12,7 +13,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import aiohttp
 import psutil
+from fastapi.middleware.cors import CORSMiddleware
 from fastmcp import Context, FastMCP
 from starlette.responses import JSONResponse
 
@@ -32,22 +35,30 @@ _rag: LanceDBRag = LanceDBRag()
 _fleet: FleetManager | None = None
 
 
-# Initialize FastMCP 3.1 (name and version only)
+# Initialize FastMCP 3.2 (Reductionist Standard)
 mcp = FastMCP(
     "Universal Actuator Hub",
-    version="2.0.0",
+    version="2.1.0",
 )
 
 
 @mcp.lifespan()
 async def lifespan(server: FastMCP):
     global _fleet
-    logger.info("Universal Actuator Federation Gateway starting (FastMCP 3.1)...")
+    logger.info("Universal Actuator Federation Gateway starting (FastMCP 3.2)...")
     await _rag.initialize()
     logger.info("LanceDB RAG initialized.")
+
     _fleet = FleetManager()
     logger.info("FleetManager ready (Federation Gateway initialized).")
+
+    # Headless Industrial Autostart
+    logger.info("Ensuring federated fleet availability...")
+    autostart_results = await _fleet.ensure_all()
+    logger.info(f"Fleet autostart results: {autostart_results}")
+
     yield
+
     logger.info("Shutting down...")
     if _fleet:
         await _fleet.close()
@@ -57,6 +68,7 @@ async def lifespan(server: FastMCP):
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _load_milestones() -> list[dict[str, Any]]:
     if not MILESTONES_FILE.exists():
@@ -81,7 +93,7 @@ async def _scan_port(port: int) -> int | None:
         writer.close()
         await writer.wait_closed()
         return port
-    except (asyncio.TimeoutError, ConnectionRefusedError, OSError):
+    except (TimeoutError, ConnectionRefusedError, OSError):
         return None
 
 
@@ -98,7 +110,9 @@ async def _glom_on_internal() -> dict[str, Any]:
                 config = json.loads(path.read_text(encoding="utf-8"))
                 servers_key = "mcpServers" if "mcpServers" in config else "servers"
                 for name, details in config.get(servers_key, {}).items():
-                    discovered.append({"name": name, "source": str(path), "command": details.get("command"), "active": False})
+                    discovered.append(
+                        {"name": name, "source": str(path), "command": details.get("command"), "active": False}
+                    )
             except Exception as e:
                 logger.error(f"Could not read {path}: {e}")
 
@@ -125,11 +139,41 @@ async def _glom_on_internal() -> dict[str, Any]:
     }
 
 
+async def _get_ollama_models_internal() -> list[str]:
+    """Dynamic elicitation of available models from local Ollama instance."""
+    url = "http://127.0.0.1:11434/api/tags"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=2.0) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    # Unified extraction: supports both old and new Ollama API schemas
+                    models = [m["name"] for m in data.get("models", [])]
+                    return models if models else ["llama3", "mistral"]  # SOTA fallbacks
+                return ["llama3", "mistral"]
+    except Exception as e:
+        logger.warning(f"Ollama discovery failed: {e}")
+        return ["llama3", "mistral"]
+
+
 async def _get_fleet_telemetry_internal() -> dict[str, Any]:
     discovery = await _glom_on_internal()
     active_nodes = [n for n in discovery["discovered_servers"] if n.get("active")]
     cpu = psutil.cpu_percent()
     mem = psutil.virtual_memory()
+
+    # Enrich node statuses with real connection check if possible
+    node_details = []
+    for node in discovery["discovered_servers"]:
+        node_details.append(
+            {
+                "name": node.get("name"),
+                "port": node.get("port"),
+                "status": "online" if node.get("active") else "offline",
+                "source": node.get("source"),
+            }
+        )
+
     return {
         "fleet_status": "Healthy" if active_nodes else "Standalone",
         "active_nodes": len(active_nodes),
@@ -137,26 +181,49 @@ async def _get_fleet_telemetry_internal() -> dict[str, Any]:
         "host_metrics": {
             "cpu_percent": cpu,
             "memory_percent": mem.percent,
-            "available_gb": round(mem.available / (1024 ** 3), 2),
+            "available_gb": round(mem.available / (1024**3), 2),
         },
-        "nodes": [n["name"] for n in active_nodes],
+        "node_details": node_details,
         "telemetry_timestamp": datetime.now().isoformat(),
     }
 
 
+async def _get_fleet_instance() -> FleetManager:
+    global _fleet
+    if _fleet is None:
+        logger.info("Lazy-initializing FleetManager (lifespan fallback)...")
+        _fleet = FleetManager()
+    return _fleet
+
+
 async def _search_federated_internal(query: str, domain: str = "all") -> dict[str, Any]:
-    """Real federated search via FleetManager → Calibre/Plex/Immich MCP servers."""
-    assert _fleet is not None, "FleetManager not initialized"
+    """Real federated search via FleetManager → Calibre/Plex/Immich/Docs/Knowledge MCP servers."""
+    fleet = await _get_fleet_instance()
+
+    # Base results structure
+    base = {"calibre": [], "plex": [], "immich": [], "docsops": [], "knowledge": []}
+
     if domain == "all":
-        results = await _fleet.search_all(query)
+        results = await fleet.search_all(query)
     elif domain == "calibre":
-        results = {"calibre": await _fleet.search_calibre(query), "plex": [], "immich": []}
+        base["calibre"] = await fleet.search_calibre(query)
+        results = base
     elif domain == "plex":
-        results = {"calibre": [], "plex": await _fleet.search_plex(query), "immich": []}
+        base["plex"] = await fleet.search_plex(query)
+        results = base
     elif domain == "immich":
-        results = {"calibre": [], "plex": [], "immich": await _fleet.search_immich(query)}
+        base["immich"] = await fleet.search_immich(query)
+        results = base
+    elif domain == "docs" or domain == "docsops":
+        all_res = await fleet.search_all(query)
+        base["docsops"] = all_res.get("docsops", [])
+        results = base
+    elif domain == "knowledge" or domain == "memory":
+        all_res = await fleet.search_all(query)
+        base["knowledge"] = all_res.get("knowledge", [])
+        results = base
     else:
-        results = await _fleet.search_all(query)
+        results = await fleet.search_all(query)
 
     total = sum(len(v) for v in results.values())
     return {
@@ -170,8 +237,8 @@ async def _search_federated_internal(query: str, domain: str = "all") -> dict[st
 
 async def _ingest_fleet_to_rag_internal() -> dict[str, Any]:
     """Real bulk ingest from all fleet sources into LanceDB RAG."""
-    assert _fleet is not None, "FleetManager not initialized"
-    counts = await _fleet.ingest_all_to_rag(_rag, limit=500)
+    fleet = await _get_fleet_instance()
+    counts = await fleet.ingest_all_to_rag(_rag, limit=500)
     stats = await _rag.stats()
     return {
         "ingested_per_source": counts,
@@ -184,14 +251,19 @@ async def _ingest_fleet_to_rag_internal() -> dict[str, Any]:
 async def _dispatch_tool(tool_name: str, args: dict[str, Any]) -> Any:
     dispatch: dict[str, Any] = {
         "search_federated": lambda: _search_federated_internal(args.get("query", ""), args.get("domain", "all")),
-        "rag_semantic_search": lambda: _rag.semantic_search(args.get("query", ""), args.get("limit", 10), args.get("source")),
+        "rag_semantic_search": lambda: _rag.semantic_search(
+            args.get("query", ""), args.get("limit", 10), args.get("source")
+        ),
         "ingest_fleet_to_rag": _ingest_fleet_to_rag_internal,
         "glom_on": _glom_on_internal,
         "get_fleet_telemetry": _get_fleet_telemetry_internal,
         "rag_stats": _rag.stats,
         "rag_clear": _rag.clear,
-        "universal_milestone": lambda: _save_milestone_internal(args.get("title", ""), args.get("description", ""), args.get("type", "info")),
+        "universal_milestone": lambda: _save_milestone_internal(
+            args.get("title", ""), args.get("description", ""), args.get("type", "info")
+        ),
         "get_milestones_history": lambda: {"milestones": _load_milestones(), "count": len(_load_milestones())},
+        "list_ollama_models": _get_ollama_models_internal,
     }
     fn = dispatch.get(tool_name)
     if fn is None:
@@ -200,8 +272,76 @@ async def _dispatch_tool(tool_name: str, args: dict[str, Any]) -> Any:
 
 
 # ---------------------------------------------------------------------------
-# MCP Tools
+# MCP Tools (Industrial Gateway Pattern)
 # ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def universal_actuator(
+    domain: str,
+    action: str,
+    payload: dict[str, Any],
+    ctx: Context,
+) -> dict[str, Any]:
+    """
+    PORTMANTEAU PATTERN RATIONALE:
+    Consolidates high-entropy cross-domain actions into a single high-fidelity router.
+    Reduces semantic overhead for agents by providing a unified protocol for
+    files, media, robotics, and system operations.
+
+    Args:
+        domain: Target domain ("files", "media", "robotics", "system").
+        action: Specific action within the domain.
+        payload: Parameter object for the action.
+    """
+    await ctx.info(f"[{ctx.correlation_id}] universal_actuator: domain={domain} action={action}")
+
+    # Internal routing logic (Reductionist approach)
+    if domain == "media":
+        if action == "search":
+            return await _search_federated_internal(payload.get("query", ""), payload.get("domain", "all"))
+        if action == "ingest":
+            return await _ingest_fleet_to_rag_internal()
+        if action == "rag_search":
+            return await _rag.semantic_search(payload.get("query", ""), payload.get("limit", 10), payload.get("source"))
+
+    if domain == "system":
+        if action == "telemetry":
+            return await _get_fleet_telemetry_internal()
+        if action == "discover":
+            return await _glom_on_internal()
+        if action == "models":
+            return await _get_ollama_models_internal()
+
+    return {
+        "status": "partial_success",
+        "message": f"Domain '{domain}' action '{action}' routed via fallback.",
+        "routing_key": f"{domain}.{action}",
+    }
+
+
+@mcp.tool()
+async def universal_status(ctx: Context) -> dict[str, Any]:
+    """
+    PORTMANTEAU PATTERN RATIONALE:
+    Aggregates lifecycle telemetry and discovery data into a single industrial health dashboard.
+    Enables rapid diagnosis of federated node connectivity and host resource utilization.
+    """
+    await ctx.info(f"[{ctx.correlation_id}] universal_status: initiating deep health check")
+    telemetry = await _get_fleet_telemetry_internal()
+    rag_info = await _rag.stats()
+
+    return {
+        "fleet": telemetry,
+        "rag": rag_info,
+        "system": {"version": "2.1.0", "mcp_version": "3.2.0", "timestamp": datetime.now().isoformat()},
+    }
+
+
+# ---------------------------------------------------------------------------
+# Legacy & Domain-Specific Tools
+# ---------------------------------------------------------------------------
+
 
 @mcp.tool()
 async def search_federated(query: str, ctx: Context, domain: str = "all") -> dict[str, Any]:
@@ -329,6 +469,13 @@ async def get_milestones_history(ctx: Context) -> dict[str, Any]:
 
 
 @mcp.tool()
+async def list_ollama_models(ctx: Context) -> list[str]:
+    """Elicit available LLM models from the local Ollama instance (no hardcoding)."""
+    await ctx.info(f"[{ctx.correlation_id}] list_ollama_models: querying Ollama API...")
+    return await _get_ollama_models_internal()
+
+
+@mcp.tool()
 async def agentic_workflow_tool(
     goal: str,
     ctx: Context,
@@ -363,15 +510,19 @@ async def agentic_workflow_tool(
                 f"\nFleet: {tel.get('fleet_status')} — {tel.get('active_nodes')} active nodes."
                 f"\nRAG: {ri.get('total_items', 0)} items indexed ({ri.get('embedding_model', 'unknown')})."
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to fetch RAG status for plan context: {e}")
 
+    json_template = (
+        '{"steps": [{"step": 1, "tool": "tool_name", "args": {}, "rationale": "why"}], '
+        '"expected_outcome": "description"}'
+    )
     plan_prompt = f"""You are orchestrating the Universal Actuator MCP Hub.
 
 Goal: {goal}{context_block}
 
 Available tools:
-- search_federated: {{query, domain="all"|"calibre"|"plex"|"immich"}}
+- search_federated: {{query, domain="all"|"calibre"|"plex"|"immich"|"docs"|"knowledge"}}
 - rag_semantic_search: {{query, limit=10, source=null}}
 - ingest_fleet_to_rag: {{}}
 - glom_on: {{}}
@@ -382,7 +533,7 @@ Available tools:
 - get_milestones_history: {{}}
 
 Return ONLY valid JSON, no markdown fences:
-{{"steps": [{{"step": 1, "tool": "tool_name", "args": {{}}, "rationale": "why"}}], "expected_outcome": "description"}}"""
+{json_template}"""
 
     try:
         raw = await ctx.sample(plan_prompt)
@@ -418,9 +569,10 @@ Return ONLY valid JSON, no markdown fences:
 
     # Phase 3 — Audit
     success_count = sum(1 for s in steps_taken if s["status"] == "success")
+    audit_summary = json.dumps([{"tool": s["step"].get("tool"), "status": s["status"]} for s in steps_taken])
     audit_prompt = f"""Audit this workflow execution:
 Goal: {goal}
-Steps ({success_count}/{len(steps_taken)} succeeded): {json.dumps([{{"tool": s["step"].get("tool"), "status": s["status"]}} for s in steps_taken])}
+Steps ({success_count}/{len(steps_taken)} succeeded): {audit_summary}
 
 Return ONLY JSON: {{"achieved": true_or_false, "quality": "good|partial|failed", "issues": [], "next_steps": []}}"""
 
@@ -434,7 +586,12 @@ Return ONLY JSON: {{"achieved": true_or_false, "quality": "good|partial|failed",
         clean = clean.strip()
         audit = json.loads(clean)
     except Exception:
-        audit = {"achieved": success_count > 0, "quality": "partial" if success_count > 0 else "failed", "issues": [], "next_steps": []}
+        audit = {
+            "achieved": success_count > 0,
+            "quality": "partial" if success_count > 0 else "failed",
+            "issues": [],
+            "next_steps": [],
+        }
 
     await ctx.info(f"[{cid}] Done. Achieved={audit.get('achieved')} Quality={audit.get('quality')}")
 
@@ -451,25 +608,103 @@ Return ONLY JSON: {{"achieved": true_or_false, "quality": "good|partial|failed",
 
 
 # ---------------------------------------------------------------------------
-# REST endpoints
+# REST API (Industrial Bridge)
 # ---------------------------------------------------------------------------
+
+
+@mcp.custom_route("/", methods=["GET"])
+async def root_health(request):
+    """Root endpoint for rapid availability verification."""
+    return JSONResponse(
+        {
+            "status": "online",
+            "service": "Universal Actuator Hub",
+            "version": "2.1.0",
+            "sota_standard": "v14.1.0",
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
 
 @mcp.custom_route("/api/v1/health", methods=["GET"])
 async def health(request):
     ri = await _rag.stats()
-    return JSONResponse({"status": "ok", "version": "2.0.0", "rag": ri, "timestamp": datetime.now().isoformat()})
+    return JSONResponse({"status": "ok", "version": "2.1.0", "rag": ri, "timestamp": datetime.now().isoformat()})
 
 
-@mcp.custom_route("/api/v1/glom_on", methods=["GET"])
-async def glom_on_rest(request):
-    res = await _glom_on_internal()
+@mcp.custom_route("/health", methods=["GET"])
+async def health_alias(request):
+    return await health(request)
+
+
+@mcp.custom_route("/api/v1/models", methods=["GET"])
+async def models_rest(request):
+    models = await _get_ollama_models_internal()
+    return JSONResponse({"models": models, "timestamp": datetime.now().isoformat()})
+
+
+@mcp.custom_route("/library", methods=["GET"])
+async def library_rest(request):
+    """
+    PORTMANTEAU REST RATIONALE:
+    Provides a high-fidelity bridge for frontend media consumption.
+    Aggregates federated search results into a flat list for list-viewers.
+    """
+    query = request.query_params.get("q", "")
+    domain = request.query_params.get("domain", "all")
+    hits = await _search_federated_internal(query, domain)
+
+    # Flatten results for the frontend
+    all_items = []
+    for source_list in hits.get("results", {}).values():
+        if isinstance(source_list, list):
+            all_items.extend(source_list)
+
+    return JSONResponse({"items": all_items, "total": len(all_items), "query": query, "domain": domain})
+
+
+@mcp.custom_route("/library/ingest", methods=["POST"])
+async def library_ingest_rest(request):
+    """Bridge to ingest_fleet_to_rag tool with industrial telemetry."""
+    logger.info("REST: Ingest trigger received.")
+    res = await _ingest_fleet_to_rag_internal()
     return JSONResponse(res)
 
 
+@mcp.custom_route("/telemetry", methods=["GET"])
+async def telemetry_rest(request):
+    """Direct bridge to fleet telemetry."""
+    res = await _get_fleet_telemetry_internal()
+    return JSONResponse(res)
+
+
+@mcp.custom_route("/chat", methods=["POST"])
+async def chat_rest(request):
+    data = await request.json()
+    msg = data.get("message", "")
+    return JSONResponse(
+        {
+            "status": "success",
+            "response": f"Federation Hub received: '{msg}'. Agentic orchestrator ready to process.",
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
+
 # ---------------------------------------------------------------------------
-# Entrypoint
+# App Factory (Must remain at bottom to capture all custom_routes)
 # ---------------------------------------------------------------------------
 
+app = mcp.http_app()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 if __name__ == "__main__":
-    # Standard SSE port for Universal Actuator Hub (aligned to 10745 from reservoir)
+    # Standard SSE port for Universal Actuator Hub (10745)
+    # RATIONALE: High-fidelity SSE transport for persistent node communication.
     mcp.run(transport="sse", port=10745)

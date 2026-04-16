@@ -6,9 +6,7 @@ from mcp.client.stdio import stdio_client
 
 
 async def main():
-    server_params = StdioServerParameters(
-        command="node", args=["D:/Dev/repos/universal-actuator-mcp/dist/index.js"]
-    )
+    server_params = StdioServerParameters(command="node", args=["D:/Dev/repos/universal-actuator-mcp/dist/index.js"])
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()

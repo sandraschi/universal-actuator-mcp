@@ -8,7 +8,7 @@ Requires-Dist: aiofiles>=25.1.0
 Requires-Dist: aiohttp>=3.13.3
 Requires-Dist: beautifulsoup4>=4.14.3
 Requires-Dist: fastapi>=0.134.0
-Requires-Dist: fastmcp<4,>=3.1.0
+Requires-Dist: fastmcp<4,>=3.2.0
 Requires-Dist: lancedb>=0.14.0
 Requires-Dist: pyarrow>=19.0.0
 Requires-Dist: sentence-transformers>=3.4.0
@@ -28,31 +28,39 @@ Requires-Dist: structlog>=25.5.0
 Requires-Dist: tenacity>=9.1.4
 Requires-Dist: uvicorn>=0.41.0
 Requires-Dist: websockets>=16.0
+Requires-Dist: pytest>=8.0.0
+Requires-Dist: pytest-asyncio>=0.23.0
+Requires-Dist: pytest-cov>=4.1.0
+Requires-Dist: httpx>=0.27.0
+Requires-Dist: prefab-ui>=0.14.0
 
 # Universal Actuator MCP Hub (Federation Gateway)
 
 > **Federated consumption router and live-dashboard hub for the RoboFang fleet (Plex, Calibre, Immich).**
 
 [![FastMCP](https://img.shields.io/badge/FastMCP-3.1.1-blue)](https://github.com/jlowin/fastmcp)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6-purple)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
 [![Port](https://img.shields.io/badge/Backend-10745-orange)](http://localhost:10745)
 [![Port](https://img.shields.io/badge/Frontend-10744-green)](http://localhost:10744)
-[![Status](https://img.shields.io/badge/Status-Beta-yellow)]()
+[![Status](https://img.shields.io/badge/Status-v2.0.0-emerald)]()
 
 ---
 
 ## Overview
 
-The Universal Actuator Hub is a **Federation Gateway** refactored to serve as the discovery and routing layer for the wider **RoboFang** fleet. While it lives in an independent repository to prevent version drift, it is a core component used by the RoboFang "Sovereign Brain" for:
-- **Federated Search**: Aggregating results from Plex, Calibre, and Immich.
-- **Fleet Discovery**: Real-time monitoring of all nodes in the 10700-10800+ range.
-- **Milestone Tracking**: Unified logging of fleet-wide agentic accomplishments.
+The Universal Actuator Hub is a **Federation Gateway** refactored to serve as the discovery and routing layer for the wider **RoboFang** fleet. It acts as the "Command & Control" center for the 15+ node ecosystem.
+
+- **Federated Search**: Aggregating results from Plex, Calibre, and Immich concurrently.
+- **Fleet Discovery**: Real-time monitoring of all nodes in the 10700-10800+ port range.
+- **Milestone Tracking**: Unified logging of agentic accomplishments.
+- **SOTA UI/UX**: Premium dashboard built with React 19, Tailwind CSS, and Radix UI.
 
 ### Actuator Domains (15+ Nodes)
 
 | Domain | Integrated Services |
 |--------|---------------------|
-| **Infrastructure** | Filesystem, Windows Operations, Virtualization, Browser (Playwright) |
+| **Infrastructure** | Filesystem, Windows Operations (WinOps), Virtualization (VirtOps), Browser (Playwright) |
 | **Knowledge** | Advanced Memory (adn), DocsOps (Central Docs), FastSearch |
 | **Media** | Plex, Calibre, Immich |
 | **Creative** | Blender, GIMP, Inkscape |
@@ -60,46 +68,45 @@ The Universal Actuator Hub is a **Federation Gateway** refactored to serve as th
 
 | Layer | Stack | Port | Purpose |
 |-------|-------|------|---------|
-| **MCP Backend** | FastMCP 3.1 + Python | `10745` (`sse`) | MCP tools + REST API |
-| **Web Dashboard** | Next.js 16 + Tailwind | `10744` | Live fleet monitoring UI |
+| **MCP Backend** | FastMCP 3.1 + Python | `10745` (`sse`) | MCP tools + REST API Gateway |
+| **Web Dashboard** | Vite + React 19 + Tailwind | `10744` | Live fleet monitoring & control |
 
-The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoints** (for the frontend dashboard) via a single FastMCP `mcp.app` ASGI application.
+The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoints** (for the frontend dashboard) via a single FastMCP `mcp.http_app` ASGI application.
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       Universal Actuator Federation Gateway              │
-│                  (FastMCP 3.1 | src/universal_actuator_mcp/server.py)    │
-│                                                                         │
-│  MCP Tools (Agentic)            REST API (Dashboard)                    │
-│  ───────────────────            ────────────────────                    │
-│  search_federated               GET  /api/v1/health                     │
-│  glom_on (discovery)            GET  /api/v1/glom_on                    │
-│  universal_milestone            GET  /telemetry                         │
-│  get_fleet_telemetry            GET  /milestones                        │
-│                                                                         │
-│  Actuator Fan-out (15+ Nodes)   Target Ports                            │
-│  ────────────────────────────   ────────────                            │
-│  Infrastructure (WinOps/FS)     :10749, :10743                          │
-│  Knowledge (Adv-Memory)         :10735                                  │
-│  Media (Calibre/Plex/Immich)    :10721, :10741, :10839                  │
-│  Creative (Blender/GIMP)        :10849, :10773                          │
-│  Robotics (Robotics/OSC/Unity)  :10706, :10831                          │
-└────────────────────────┬────────────────────────────────────────────────┘
-                         │ SSE / REST
-              ┌──────────▼──────────┐
-              │   Next.js Frontend   │
-              │   localhost:10744    │
-              │                     │
-              │  /           Dashboard + live telemetry
-              │  /fleet      Fleet discovery grid
-              │  /library    Federated media browser
-              │  /chat       Federated command dispatch
-              │  /tools      MCP tool catalog
-              └─────────────────────┘
+
+                       Universal Actuator Federation Gateway              
+               (FastMCP 3.1 | src/universal_actuator_mcp/server.py)       
+                                                                         
+  MCP Tools (Agentic)            REST API (Dashboard)                    
+                                  
+  search_all (federated)         GET  /api/v1/health                     
+  glom_on (discovery)            GET  /api/v1/glom_on                    
+  universal_milestone            GET  /telemetry                         
+  get_fleet_telemetry            GET  /milestones                        
+                                                                         
+  Actuator Fan-out (15+ Nodes)   Downstream Transports                   
+                        
+  Infrastructure (WinOps/FS)     stdio (sub-process spawn)               
+  Knowledge (Memory/Docs)        stdio (sub-process spawn)               
+  Media (Calibre/Plex/Immich)    stdio (sub-process spawn)               
+  Robotics (OSC/Unity)           udp/stdio                               
+
+                          SSE / REST (localhost:10745)
+              
+                  Vite Frontend    
+                 localhost:10744    
+                                   
+                /           Dashboard + live telemetry
+                /status     Federation health & node status
+                /library    Federated media browser
+                /tools      GrokTools catalog
+                /settings   Gateway configuration
+              
 ```
 
 ---
@@ -109,126 +116,106 @@ The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoint
 ### Federated Search & Discovery
 | Tool | Description |
 |------|-------------|
-| `search_federated(query, domain)` | Semantic search across active fleet nodes. `domain`: `all\|books\|media\|photos` |
-| `glom_on()` | Auto-discover all active MCP servers in port range 10700–10900 |
-| `get_fleet_telemetry()` | CPU, memory, active node count, uptime |
-| `federated_search(query)` | Cross-node structured search with ranked results |
+| `search_federated(query, domain)` | Parallel fan-out search across Calibre, Plex, Immich, and Memory nodes. |
+| `glom_on()` | Auto-discover and register all active MCP servers in port range 1070010900. |
+| `get_fleet_telemetry()` | Real-time CPU, memory, active node count, and host uptime. |
 
-### Milestone Tracking
+### RAG & Semantic Analysis
 | Tool | Description |
 |------|-------------|
-| `universal_milestone(title, description, type)` | Log a persistent milestone to `backend/state/milestones.json` |
-| `get_milestones_history()` | Retrieve full milestone log |
+| `rag_semantic_search(query, limit, source)` | High-precision vector search via LanceDB (all-MiniLM-L6-v2). |
+| `ingest_fleet_to_rag()` | Bulk-populate the vector index from all discovered media sources. |
+| `rag_stats()` / `rag_clear()` | Monitor index health or perform a fresh index rebuild. |
 
-### App Launching
-| REST Endpoint | Description |
-|---------------|-------------|
-| `POST /launch` | Launch a registered app by `app_id` (fires `start.ps1` in detached process) |
+### Milestone & Agentic Workflow
+| Tool | Description |
+|------|-------------|
+| `agentic_workflow_tool(goal)` | [SEP-1577] Autonomous multi-step orchestration via `ctx.sample()`. |
+| `universal_milestone(title, description, type)` | Log a persistent milestone to the centralized fleet audit trail. |
+| `get_milestones_history()` | Retrieve the full historical record of agentic accomplishments. |
 
 ---
 
-## REST Endpoints
+## REST Endpoints (Internal Gateway)
 
-All endpoints served on `http://localhost:10857`:
+All internal endpoints are served via `mcp.http_app` on `http://localhost:10745`:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/discovery` | Fleet scan — all active servers in range |
-| `GET` | `/telemetry` | Live CPU, memory, uptime, milestone count |
-| `GET` | `/milestones` | Full milestone history |
-| `GET` | `/library` | Federated media search (`?q=…&domain=all\|books\|media\|photos`) |
-| `GET` | `/glom_on` | Raw glom-on discovery JSON |
-| `POST` | `/chat` | Dispatch a command/query to the fleet |
-| `POST` | `/launch` | Launch a registered app via `start.ps1` |
+| `GET` | `/api/v1/health` | Gateway health check + RAG stats |
+| `GET` | `/api/v1/glom_on` | Returns JSON of all auto-discovered fleet nodes |
+| `GET` | `/telemetry` | Real-time host and federation metrics |
+| `GET` | `/milestones` | JSON log of all fleet-wide accomplishments |
 
 ---
 
-## Port Allocation
+## Startup & Deployment
 
-| Service | Port | Notes |
-|---------|------|-------|
-| Frontend dashboard | `10744` | Next.js dev server |
-| Backend MCP server | `10745` | FastMCP SSE transport |
-| Calibre MCP (sub) | `10720` | Fan-out target |
-| Plex MCP (sub) | `10740` | Fan-out target |
-| Immich MCP (sub) | `10838` | Fan-out target |
-
----
-
-## Startup
-
-### Dashboard (Frontend)
+### Automated Launch
+The project includes a robust PowerShell orchestration script that clears port squatters and launches both the backend and frontend.
 
 ```powershell
-# Double-click or run:
-webapp\start.bat
-# Or directly:
-cd webapp; powershell ./start.ps1
+# Run from the project root:
+.\start.ps1
 ```
 
-### MCP Backend
-
+### Manual Individual Launch
+**Backend (FastMCP SSE)**:
 ```powershell
-# Run from project root:
-uv run uvicorn universal_actuator_mcp.server:mcp.app --host 127.0.0.1 --port 10745
-# Or via the project root start.ps1
+uv run uvicorn universal_actuator_mcp.server:mcp.http_app --host 127.0.0.1 --port 10745
 ```
 
-### MCP Registration (Antigravity / Claude Desktop)
+**Frontend (Vite Dev)**:
+```powershell
+cd webapp; npm run dev
+```
 
+### IDE Configuration (Antigravity)
+Add this to your `mcp_config.json`:
 ```json
 {
-  "univactops": {
-    "command": "uv",
-    "args": ["--directory", "D:/Dev/repos/universal-actuator-mcp", "run", "uvicorn", "universal_actuator_mcp.server:mcp.app", "--host", "127.0.0.1", "--port", "10745"],
-    "cwd": "D:/Dev/repos/universal-actuator-mcp"
+  "mcpServers": {
+    "universal-actuator": {
+      "command": "uv",
+      "args": ["--directory", "D:/Dev/repos/universal-actuator-mcp", "run", "uvicorn", "universal_actuator_mcp.server:mcp.http_app", "--host", "127.0.0.1", "--port", "10745"],
+      "cwd": "D:/Dev/repos/universal-actuator-mcp"
+    }
   }
 }
 ```
 
 ---
 
-## Dashboard Pages
+## Dashboard Routing
 
 | Page | Route | Data Source |
 |------|-------|-------------|
-| **Dashboard** | `/` | `GET /telemetry` + `GET /milestones` — live metrics, uptime, milestone log |
-| **Fleet** | `/fleet` | `GET /discovery` — auto-discovered nodes with active/offline status |
-| **Library** | `/library` | `GET /library` — Calibre + Plex fan-out with demo fallback |
-| **Chat** | `/chat` | `POST /chat` — federated command dispatch with live response |
-| **Tools** | `/tools` | `GET /glom_on` — MCP tool catalog from all active nodes |
-
----
-
-## State & Persistence
-
-- Milestones: `backend/state/milestones.json` (append-only log)
-- App launch registry: `APP_LAUNCH_REGISTRY` dict in `backend/server.py`
-- Sub-server fan-out config: `config.json` (project root)
+| **Dashboard** | `/` | Aggregated telemetry and milestone feed |
+| **Status** | `/status` | Real-time node status and federation health cards |
+| **Library** | `/library` | Federated asset search across Calibre, Plex, and Immich |
+| **Apps Hub** | `/apps` | Fleet-wide app launcher and discovery grid |
+| **GrokTools** | `/tools` | Dynamic MCP tool schema analyzer |
+| **Settings** | `/settings` | Config manager for downstream servers |
 
 ---
 
 ## Development
 
-```powershell
-# Frontend dev server
-cd webapp; npm run dev      # http://localhost:10744
-
-# Lint/type-check
-cd webapp; npx tsc --noEmit
-cd webapp; npx next build   # full production build check
-
-# Python backend (live reload)
-uv run uvicorn universal_actuator_mcp.server:mcp.app --reload --port 10745
-```
+- **Architecture**: Materialist & Reductionist design. Data constitutes the only reality.
+- **Frontend**: React 19 with Lucide icons and Framer Motion transitions.
+- **Backend**: FastMCP 3.1 with async `stdio` client orchestration and **LanceDB RAG**.
+- **Agentic Logic**: SEP-1577 "Plan-Execute-Audit" workflows via `ctx.sample()`.
 
 ---
 
-## Changelog
-
-See [CHANGELOG.md](./CHANGELOG.md).
+## Technical Debt & Roadmap
+- [ ] Implement secure `HTTPS` transport for remote federation access.
+- [ ] Add `GPU` telemetry monitoring for RTX 4090 performance tracking.
+- [ ] Expand `Glom On` to include auto-discovery of local LLM endpoints (Ollama).
 
 ---
 
-*Built with Materialist Logic & Agentic Precision.*
+See [CHANGELOG.md](./CHANGELOG.md) for version history.
+
+*Built with Agentic Precision for the RoboFang Fleet.*
 *Maintainer: [sandraschi](https://github.com/sandraschi)*

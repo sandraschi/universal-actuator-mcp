@@ -3,7 +3,7 @@ import { Send, Bot, User, Terminal, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-const API_BASE = 'http://localhost:10857';
+const API_BASE = 'http://localhost:10745';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -71,7 +71,7 @@ export function Chat() {
             setIsConnected(false);
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: `Backend unreachable (port 10857). Start the server: uv run python backend/server.py`,
+                content: `Backend unreachable (port 10745). Start the server: uv run python backend/server.py`,
                 timestamp: new Date().toLocaleTimeString(),
             }]);
         } finally {
@@ -97,7 +97,7 @@ export function Chat() {
                 <div className="flex items-center gap-2">
                     {isConnected === true && (
                         <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
-                            <Wifi className="h-3 w-3" /> LIVE :10857
+                            <Wifi className="h-3 w-3" /> LIVE :10745
                         </span>
                     )}
                     {isConnected === false && (

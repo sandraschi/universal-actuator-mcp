@@ -1,16 +1,15 @@
 """
-Fleet integration layer for the Universal Actuator backend server.
-
-Bridges backend/server.py to FleetAggregator + individual downstream MCP servers
-(Calibre, Plex, Immich). Handles:
-  - FleetConfigManager: reads 'servers' key from project config.json
-  - FleetManager: high-level search + bulk-list methods used by the backend
+SOTA Fleet Integration Layer — Universal Actuator Hub
+Industrial mediation between the Gateway and federated media nodes.
 """
+
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
+import os
+import socket
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +27,7 @@ _CONFIG_PATH = str(Path(__file__).parent.parent.parent / "config.json")
 # Config adapter — project config.json uses "servers" not "mcpServers"
 # ---------------------------------------------------------------------------
 
+
 class FleetConfigManager(ConfigManager):
     """Reads project config.json which uses 'servers' key."""
 
@@ -39,187 +39,232 @@ class FleetConfigManager(ConfigManager):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _extract_json(result: Any) -> Any:
-    """Unpack MCP CallToolResult → Python object."""
-    if result is None:
-        return None
-    # FastMCP returns objects with .content list of TextContent
-    if hasattr(result, "content") and result.content:
-        text = result.content[0].text if hasattr(result.content[0], "text") else str(result.content[0])
-        try:
-            return json.loads(text)
-        except (json.JSONDecodeError, TypeError):
-            return text
-    if isinstance(result, (dict, list)):
-        return result
-    try:
-        return json.loads(str(result))
-    except (json.JSONDecodeError, TypeError):
-        return result
-
-
-def _fmt_immich(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    out = []
-    for item in items:
-        out.append({
-            "title": item.get("originalFileName") or item.get("albumName") or item.get("name") or "Unknown",
-            "author": item.get("ownerId"),
-            "source": "immich",
-            "type": item.get("type", "photo").lower(),
-            "id": str(item.get("id", item.get("assetId", ""))),
-            "metadata": {
-                "created": item.get("fileCreatedAt"),
-                "city": item.get("exifInfo", {}).get("city") if isinstance(item.get("exifInfo"), dict) else None,
-                "album": item.get("albumName"),
-            },
-        })
-    return out
+# Helper logic moved to FleetAggregator
 
 
 # ---------------------------------------------------------------------------
 # FleetManager
 # ---------------------------------------------------------------------------
 
+
 class FleetManager:
     """
-    High-level fleet operations for the backend server.
-
-    Usage (in lifespan):
-        fleet = FleetManager()
-        # no explicit init needed — FleetAggregator connects lazily
-        ...
-        await fleet.close()
+    PORTMANTEAU PATTERN RATIONALE:
+    Orchestrates disparate MCP sessions into a unified, high-availability fleet interface.
+    Handles the reduction of federated tool results into standardized media objects.
     """
 
     def __init__(self) -> None:
-        cfg = FleetConfigManager(config_path=_CONFIG_PATH)
-        self._fleet = FleetAggregator(cfg)
+        self._cfg_manager = FleetConfigManager(config_path=_CONFIG_PATH)
+        self._fleet = FleetAggregator(self._cfg_manager)
+        self._processes: dict[str, subprocess.Popen] = {}
 
     async def close(self) -> None:
+        """Industrial shutdown: release all downstream sessions and processes."""
         await self._fleet.close()
+        for node_id, proc in self._processes.items():
+            if proc.poll() is None:
+                logger.info(f"Shutting down headless node: {node_id}")
+                proc.terminate()
+        self._processes.clear()
+
+    # --- Autostart / Ensure Logic ---
+
+    def is_port_open(self, host: str, port: int) -> bool:
+        """Check if a port is bound (indicating the service is alive)."""
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.5)
+            return s.connect_ex((host, port)) == 0
+
+    async def ensure_all(self) -> dict[str, str]:
+        """
+        INDUSTRIAL LOGIC:
+        Ensures all federated media nodes are active.
+        If a port is closed, triggers a headless backend startup.
+        """
+        nodes = self._cfg_manager.get_mcp_servers()
+        results = {}
+
+        for node_id, config in nodes.items():
+            # Only ensure nodes with a defined URL/SSE scheme (the media fleet)
+            if "url" not in config or config.get("scheme") != "sse":
+                continue
+
+            url = config["url"]
+            try:
+                host, port_str = url.split(":")
+                port = int(port_str)
+            except (ValueError, AttributeError):
+                logger.warning(f"Invalid URL for node {node_id}: {url}")
+                continue
+
+            if self.is_port_open(host, port):
+                logger.debug(f"Fleet node '{node_id}' is already active on {url}")
+                results[node_id] = "online"
+            else:
+                logger.info(f"Fleet node '{node_id}' is offline. Triggering headless start...")
+                success = await self._start_node_headless(node_id, config, host, port)
+                results[node_id] = "starting" if success else "failed"
+
+        return results
+
+    async def _start_node_headless(self, node_id: str, config: dict, host: str, port: int) -> bool:
+        """
+        Starts an MCP node in the background using 'uv run'.
+        Uses environment variables (MCP_TRANSPORT, MCP_PORT) for maximum compatibility.
+        """
+        python_path = config.get("env", {}).get("PYTHONPATH", "")
+        if not python_path:
+            logger.error(f"Cannot start {node_id}: No PYTHONPATH found in config.")
+            return False
+
+        # Infer repo root from PYTHONPATH (e.g. D:/Dev/repos/plex-mcp/src -> D:/Dev/repos/plex-mcp)
+        first_path = python_path.split(";")[0]
+        repo_root = str(Path(first_path).parent)
+
+        # Standard industrial command: uv run -m <module>
+        module = ""
+        args = config.get("args", [])
+        if "-m" in args:
+            m_idx = args.index("-m")
+            if m_idx + 1 < len(args):
+                module = args[m_idx + 1]
+
+        if not module:
+            logger.error(f"Cannot start {node_id}: module name not found in args.")
+            return False
+
+        # Use environment variables for transport. SOTA servers (FastMCP + our wrapper) respect these.
+        env = {
+            **os.environ,
+            "PYTHONPATH": python_path,
+            "MCP_TRANSPORT": "http",
+            "MCP_PORT": str(port),
+            "MCP_HOST": host,
+            "PYTHONUNBUFFERED": "1",
+        }
+
+        cmd = ["uv", "run", "python", "-m", module]
+        logger.info(f"Executing industrial headless start for {node_id} (port {port})")
+
+        try:
+            # CREATE_NO_WINDOW (0x08000000) prevents terminal popups on Windows
+            creation_flags = 0
+            if os.name == "nt":
+                creation_flags = 0x08000000
+
+            proc = subprocess.Popen(  # noqa: S603
+                cmd,
+                cwd=repo_root,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=env,
+                creationflags=creation_flags,
+            )
+            self._processes[node_id] = proc
+
+            # Short wait and verify port
+            for _ in range(10):
+                await asyncio.sleep(1.0)
+                if self.is_port_open(host, port):
+                    logger.info(f"Fleet node '{node_id}' successfully reached on {host}:{port}")
+                    return True
+                if proc.poll() is not None:
+                    logger.error(f"Fleet node '{node_id}' exited prematurely with code {proc.returncode}")
+                    return False
+
+            logger.warning(f"Fleet node '{node_id}' started but port {port} is not yet open.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to spawn {node_id}: {e}")
+            return False
 
     # --- Calibre ---
 
     async def search_calibre(self, query: str, limit: int = 20) -> list[dict[str, Any]]:
-        try:
-            result = await self._fleet.call_tool("calibre", "search_books", {"query": query, "limit": limit})
-            raw = _extract_json(result)
-            return self._fleet._format_calibre_results(raw) if isinstance(raw, list) else []
-        except Exception as e:
-            logger.warning(f"Calibre search_books failed: {e}")
-            return []
+        results = await self._fleet.aggregate_search(query, limit)
+        return results.get("calibre", [])
 
     async def list_calibre(self, limit: int = 500) -> list[dict[str, Any]]:
         """Bulk fetch for RAG ingestion."""
-        # Try list_books first, fallback to search with wildcard
-        for tool, args in [
-            ("list_books", {"limit": limit}),
-            ("search_books", {"query": "", "limit": limit}),
-            ("search_books", {"query": "*", "limit": limit}),
-        ]:
-            try:
-                result = await self._fleet.call_tool("calibre", tool, args)
-                raw = _extract_json(result)
-                if isinstance(raw, list) and raw:
-                    return self._fleet._format_calibre_results(raw)
-            except Exception as e:
-                logger.debug(f"Calibre {tool} failed: {e}")
-        logger.warning("All Calibre list attempts failed.")
-        return []
+        # aggregator.aggregate_search with empty query generally triggers a fallback list
+        results = await self._fleet.aggregate_search("", limit)
+        return results.get("calibre", [])
 
     # --- Plex ---
 
     async def search_plex(self, query: str, limit: int = 20) -> list[dict[str, Any]]:
-        try:
-            result = await self._fleet.call_tool("plex", "search", {"query": query, "limit": limit})
-            raw = _extract_json(result)
-            return self._fleet._format_plex_results(raw) if isinstance(raw, list) else []
-        except Exception as e:
-            logger.warning(f"Plex search failed: {e}")
-            return []
+        results = await self._fleet.aggregate_search(query, limit)
+        return results.get("plex", [])
 
     async def list_plex(self, limit: int = 500) -> list[dict[str, Any]]:
-        """Bulk fetch for RAG ingestion — try several plausible tool names."""
-        items: list[dict[str, Any]] = []
-        for tool, args in [
-            ("get_all_media", {"limit": limit}),
-            ("list_media", {"limit": limit}),
-            ("get_libraries", {}),
-            ("search", {"query": "", "limit": limit}),
-        ]:
-            try:
-                result = await self._fleet.call_tool("plex", tool, args)
-                raw = _extract_json(result)
-                if isinstance(raw, list) and raw:
-                    items = self._fleet._format_plex_results(raw)
-                    break
-            except Exception as e:
-                logger.debug(f"Plex {tool} failed: {e}")
-        return items[:limit]
+        results = await self._fleet.aggregate_search("", limit)
+        return results.get("plex", [])
 
     # --- Immich ---
 
     async def search_immich(self, query: str, limit: int = 20) -> list[dict[str, Any]]:
-        for tool, args in [
-            ("search_assets", {"query": query, "limit": limit}),
-            ("search_photos", {"query": query, "limit": limit}),
-            ("search", {"query": query, "limit": limit}),
-        ]:
-            try:
-                result = await self._fleet.call_tool("immich", tool, args)
-                raw = _extract_json(result)
-                if isinstance(raw, list):
-                    return _fmt_immich(raw)
-            except Exception as e:
-                logger.debug(f"Immich {tool} failed: {e}")
-        logger.warning("All Immich search attempts failed.")
-        return []
+        results = await self._fleet.aggregate_search(query, limit)
+        return results.get("immich", [])
 
     async def list_immich(self, limit: int = 500) -> list[dict[str, Any]]:
-        """Bulk fetch for RAG ingestion."""
-        for tool, args in [
-            ("list_albums", {"limit": limit}),
-            ("list_assets", {"limit": limit}),
-            ("get_assets", {"limit": limit}),
-            ("search_assets", {"query": "", "limit": limit}),
-        ]:
-            try:
-                result = await self._fleet.call_tool("immich", tool, args)
-                raw = _extract_json(result)
-                if isinstance(raw, list) and raw:
-                    return _fmt_immich(raw)[:limit]
-            except Exception as e:
-                logger.debug(f"Immich {tool} failed: {e}")
-        return []
+        results = await self._fleet.aggregate_search("", limit)
+        return results.get("immich", [])
 
     # --- Federated ---
 
     async def search_all(self, query: str, limit: int = 20) -> dict[str, list[dict[str, Any]]]:
-        """Concurrent federated search across Calibre, Plex, Immich."""
-        # Use the parallel aggregator directly for maximum efficiency
+        """Concurrent federated search across all nodes (Calibre, Plex, Docs, Memory, Immich)."""
         return await self._fleet.aggregate_search(query, limit)
+
+    async def list_docs(self, limit: int = 500) -> list[dict[str, Any]]:
+        results = await self._fleet.aggregate_search("", limit)
+        return results.get("docsops", [])  # 'docsops' is the key in sourced_results
+
+    async def list_knowledge(self, limit: int = 500) -> list[dict[str, Any]]:
+        results = await self._fleet.aggregate_search("", limit)
+        return results.get("knowledge", [])
 
     async def ingest_all_to_rag(self, rag: Any, limit: int = 500) -> dict[str, int]:
         """
-        Bulk-list all sources and ingest into the provided LanceDBRag instance.
-        Returns per-source ingest counts.
+        REDUCTIONIST INGESTION LOGIC:
+        Aggregates metadata from all 5 federated nodes in parallel.
+        Normalizes results into a flat ingestion stream for the LanceDB index.
         """
-        calibre_items, plex_items, immich_items = await asyncio.gather(
+        logger.info(f"Industrial Ingest: Fetching from 5 nodes (limit={limit})...")
+
+        # Parallel fetch from all nodes
+        results = await asyncio.gather(
             self.list_calibre(limit),
             self.list_plex(limit),
             self.list_immich(limit),
+            self.list_docs(limit),
+            self.list_knowledge(limit),
             return_exceptions=True,
         )
 
+        sources = ["calibre", "plex", "immich", "docsops", "knowledge"]
         counts: dict[str, int] = {}
-        for source, items in [("calibre", calibre_items), ("plex", plex_items), ("immich", immich_items)]:
+
+        all_items = []
+        for source, items in zip(sources, results, strict=False):
             if isinstance(items, list) and items:
-                n = await rag.ingest_items(items)
-                counts[source] = n
-                logger.info(f"Fleet RAG ingest: {source} → {n} items")
+                all_items.extend(items)
+                counts[source] = len(items)
+                logger.info(f"Fleet fetch: {source} → {len(items)} items")
             else:
                 counts[source] = 0
                 if isinstance(items, Exception):
-                    logger.warning(f"Fleet RAG ingest: {source} failed — {items}")
+                    logger.warning(f"Fleet fetch: {source} failed — {items}")
+                else:
+                    logger.info(f"Fleet fetch: {source} returned no items")
+
+        if all_items:
+            # Batch ingest into LanceDB
+            n = await rag.ingest_items(all_items)
+            logger.info(f"Unified RAG ingest complete: {n} total items indexed.")
+            counts["total"] = n
+        else:
+            counts["total"] = 0
 
         return counts

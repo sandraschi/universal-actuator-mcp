@@ -1,6 +1,6 @@
 # Webapp Start - Standardized SOTA (Auto-Repaired V2.5)
-$WebPort = 10919
-$BackendPort = 10920
+$WebPort = 10744
+$BackendPort = 10745
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 
 # 1. Kill any process squatting on the ports
@@ -19,7 +19,7 @@ if (-not (Test-Path "node_modules")) { npm install }
 Write-Host "Starting Python backend on port $BackendPort ..." -ForegroundColor Cyan
 
 # Use TRIPLE backtick to ensure $env:PYTHONPATH reaches the REAL shell
-$backendCmd = "`$env:PYTHONPATH = '$PSScriptRoot;$PSScriptRoot\src'; Set-Location '$PSScriptRoot'; uv run uvicorn universal_actuator_mcp.server:app --host 127.0.0.1 --port $BackendPort --log-level info"
+$backendCmd = "& { Set-Location '$PSScriptRoot\..'; `$env:PYTHONPATH = 'src'; uv run uvicorn universal_actuator_mcp.server:mcp.http_app --factory --host 127.0.0.1 --port $BackendPort --log-level info }"
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd -WindowStyle Normal
 
