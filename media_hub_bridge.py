@@ -1,13 +1,14 @@
 import asyncio
 import json
 import logging
+import os
 
 import aiohttp
 import uvicorn
 import websockets
 from fastmcp import Context, FastMCP
 from starlette.middleware.cors import CORSMiddleware
-from websockets.server import serve
+from websockets import serve
 
 from universal_actuator_mcp.cognitive_bridge import CognitiveBridge
 from universal_actuator_mcp.config_manager import ConfigManager
@@ -131,17 +132,27 @@ async def openfang_bridge(websocket):
 
 async def run_servers():
     """Run both FastMCP (SSE) and WebSocket bridge servers concurrently."""
-    # 1. Start WebSocket Bridge for OpenFang
-    await serve(openfang_bridge, "localhost", 10746)
-    logger.info("WebSocket Bridge started on port 10746")
+    ws_port = int(os.environ.get("MEDIA_HUB_WS_PORT", "10746"))
+    try:
+        ws_server = await serve(openfang_bridge, "localhost", ws_port)
+    except OSError as exc:
+        logger.error(
+            "WebSocket bridge could not bind to localhost:%s (%s). "
+            "On Windows, the port may be in an excluded range (see "
+            "'netsh interface ipv4 show excludedportrange protocol=tcp'). "
+            "Set MEDIA_HUB_WS_PORT to a free port.",
+            ws_port,
+            exc,
+        )
+        raise
+    logger.info("WebSocket bridge listening on port %s", ws_port)
 
-    # 2. Configure Uvicorn for FastMCP's HTTP/SSE layer
-    # We use mcp.http_app() which was already configured with CORS
-    config = uvicorn.Config(mcp.http_app(), host="127.0.0.1", port=10747, log_level="info", loop="asyncio")
-    mcp_server = uvicorn.Server(config)
+    # Configure Uvicorn for FastMCP's HTTP/SSE layer (mcp.http_app() already has CORS)
+    uvicorn_config = uvicorn.Config(mcp.http_app(), host="127.0.0.1", port=10747, log_level="info", loop="asyncio")
+    mcp_server = uvicorn.Server(uvicorn_config)
 
     logger.info("Media Hub SSE Server (MCP) starting on port 10747...")
-    await mcp_server.serve()
+    await asyncio.gather(ws_server.serve_forever(), mcp_server.serve())
 
 
 if __name__ == "__main__":

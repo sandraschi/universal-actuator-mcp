@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -704,7 +705,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+def main():
+    """Industrial entry point for Universal Actuator Hub."""
+    # Windows binary mode for stdout to prevent JSON-RPC corruption
+    if sys.platform == "win32":
+        import msvcrt
+
+        msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+
+    # SSE port for Universal Actuator Hub (10745); override with UA_SSE_PORT
+    # If MCP_TRANSPORT is set to 'sse', use it. Otherwise FastMCP handles transport.
+    _sse_port = int(os.environ.get("UA_SSE_PORT", os.environ.get("MCP_PORT", "10745")))
+    _transport = os.environ.get("MCP_TRANSPORT", None)
+
+    if _transport == "sse" or os.environ.get("UA_FORCE_SSE"):
+        mcp.run(transport="sse", port=_sse_port)
+    else:
+        # Defaults to stdio or follows FastMCP environment variables
+        mcp.run()
+
+
 if __name__ == "__main__":
-    # Standard SSE port for Universal Actuator Hub (10745)
-    # RATIONALE: High-fidelity SSE transport for persistent node communication.
-    mcp.run(transport="sse", port=10745)
+    main()

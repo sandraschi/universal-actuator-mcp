@@ -1,0 +1,2 @@
+[console_scripts]
+universal-actuator-mcp = universal_actuator_mcp.server:main

@@ -10,6 +10,7 @@ src/universal_actuator_mcp/server.py
 src/universal_actuator_mcp.egg-info/PKG-INFO
 src/universal_actuator_mcp.egg-info/SOURCES.txt
 src/universal_actuator_mcp.egg-info/dependency_links.txt
+src/universal_actuator_mcp.egg-info/entry_points.txt
 src/universal_actuator_mcp.egg-info/requires.txt
 src/universal_actuator_mcp.egg-info/top_level.txt
 src/universal_actuator_mcp/routers/media.py

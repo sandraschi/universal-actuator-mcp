@@ -1,5 +1,7 @@
 # Universal Actuator MCP Hub (Federation Gateway)
 
+[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2.0-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+
 > **Federated consumption router and live-dashboard hub for the RoboFang fleet (Plex, Calibre, Immich).**
 
 [![FastMCP](https://img.shields.io/badge/FastMCP-3.1.1-blue)](https://github.com/jlowin/fastmcp)
@@ -32,7 +34,7 @@ The Universal Actuator Hub is a **Federation Gateway** refactored to serve as th
 
 | Layer | Stack | Port | Purpose |
 |-------|-------|------|---------|
-| **MCP Backend** | FastMCP 3.1 + Python | `10745` (`sse`) | MCP tools + REST API Gateway |
+| **MCP Backend** | FastMCP 3.2.0 + Python | `10745` (`sse`) | MCP tools + REST API Gateway |
 | **Web Dashboard** | Vite + React 19 + Tailwind | `10744` | Live fleet monitoring & control |
 
 The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoints** (for the frontend dashboard) via a single FastMCP `mcp.http_app` ASGI application.
@@ -44,7 +46,7 @@ The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoint
 ```
 
                        Universal Actuator Federation Gateway              
-               (FastMCP 3.1 | src/universal_actuator_mcp/server.py)       
+               (FastMCP 3.2.0 | src/universal_actuator_mcp/server.py)       
                                                                          
   MCP Tools (Agentic)            REST API (Dashboard)                    
                                   
@@ -167,7 +169,7 @@ Add this to your `mcp_config.json`:
 
 - **Architecture**: Materialist & Reductionist design. Data constitutes the only reality.
 - **Frontend**: React 19 with Lucide icons and Framer Motion transitions.
-- **Backend**: FastMCP 3.1 with async `stdio` client orchestration and **LanceDB RAG**.
+- **Backend**: FastMCP 3.2.0 with async `stdio` client orchestration and **LanceDB RAG**.
 - **Agentic Logic**: SEP-1577 "Plan-Execute-Audit" workflows via `ctx.sample()`.
 
 ---
@@ -183,3 +185,14 @@ See [CHANGELOG.md](./CHANGELOG.md) for version history.
 
 *Built with Agentic Precision for the RoboFang Fleet.*
 *Maintainer: [sandraschi](https://github.com/sandraschi)*
+
+
+## 🛡️ Industrial Quality Stack
+
+This project adheres to **SOTA 14.1** industrial standards for high-fidelity agentic orchestration:
+
+- **Python (Core)**: [Ruff](https://astral.sh/ruff) for linting and formatting. Zero-tolerance for `print` statements in core handlers (`T201`).
+- **Webapp (UI)**: [Biome](https://biomejs.dev/) for sub-millisecond linting. Strict `noConsoleLog` enforcement.
+- **Protocol Compliance**: Hardened `stdout/stderr` isolation to ensure crash-resistant JSON-RPC communication.
+- **Automation**: [Justfile](./justfile) recipes for all fleet operations (`just lint`, `just fix`, `just dev`).
+- **Security**: Automated audits via `bandit` and `safety`.

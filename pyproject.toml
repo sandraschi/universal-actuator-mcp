@@ -40,6 +40,9 @@ dependencies = [
     "prefab-ui>=0.14.0",
 ]
 
+[project.scripts]
+universal-actuator-mcp = "universal_actuator_mcp.server:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
