@@ -10,7 +10,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 10706,
+    port: 10982,
     host: "127.0.0.1",
+    proxy: {
+      "/api":     { target: "http://127.0.0.1:10745", changeOrigin: true },      "/library": { target: "http://127.0.0.1:10745", changeOrigin: true },
+      "/telemetry": { target: "http://127.0.0.1:10745", changeOrigin: true },
+      "/health":  { target: "http://127.0.0.1:10745", changeOrigin: true },
+      "/chat":    { target: "http://127.0.0.1:10745", changeOrigin: true },
+      "/launch":  { target: "http://127.0.0.1:10745", changeOrigin: true },
+    },
   }
 });
