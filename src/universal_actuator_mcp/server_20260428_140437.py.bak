@@ -633,34 +633,6 @@ async def health(request):
     return JSONResponse({"status": "ok", "version": "2.1.0", "rag": ri, "timestamp": datetime.now().isoformat()})
 
 
-@mcp.custom_route("/api/v1/deps", methods=["GET"])
-async def deps_status(request):
-    """Dependency health: reports calibre-mcp and plex-mcp reachability."""
-
-    async def _check(host: str, port: int) -> bool:
-        try:
-            _, writer = await asyncio.wait_for(asyncio.open_connection(host, port), timeout=1.0)
-            writer.close()
-            await writer.wait_closed()
-            return True
-        except Exception:
-            return False
-
-    calibre_up = await _check("127.0.0.1", 10720)
-    plex_up = await _check("127.0.0.1", 10740)
-    all_ok = calibre_up and plex_up
-    return JSONResponse(
-        {
-            "ok": all_ok,
-            "deps": {
-                "calibre": {"port": 10720, "up": calibre_up},
-                "plex": {"port": 10740, "up": plex_up},
-            },
-            "timestamp": datetime.now().isoformat(),
-        }
-    )
-
-
 @mcp.custom_route("/health", methods=["GET"])
 async def health_alias(request):
     return await health(request)

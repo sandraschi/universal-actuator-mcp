@@ -157,37 +157,15 @@ const MediaLibrary = () => {
     }
             </div >
 
-    {/* Dependency status banners */}
-{deps && !deps.ok && (
-    <div className="space-y-2">
-        {!deps.deps.calibre.up && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span><strong>calibre-mcp</strong> is not running (port {deps.deps.calibre.port}). Books will be unavailable. Run <code className="bg-black/30 px-1 rounded">calibre-start.bat</code> to start it.</span>
-            </div>
-        )}
-        {!deps.deps.plex.up && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span><strong>plex-mcp</strong> is not running (port {deps.deps.plex.port}). Movies &amp; TV will be unavailable. Run <code className="bg-black/30 px-1 rounded">plex-start.bat</code> to start it.</span>
-            </div>
-        )}
-    </div>
-)}
-{deps?.ok && (
-    <div className="flex items-center gap-2 text-xs text-emerald-500/70">
-        <CheckCircle2 className="w-3 h-3" />
-        <span>calibre-mcp and plex-mcp online</span>
-    </div>
-)}
-
-    {/* Fetch error banner (actuator backend itself) */}
-{error && (
-    <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-        <AlertCircle className="w-4 h-4 shrink-0" />
-        <span>Actuator backend error: {error}. Is the backend running on port 10745?</span>
-    </div>
-)}
+    {/* Error banner */ }
+{
+    error && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>Backend error: {error}. Showing empty state — start the backend on port 10745 to load real data.</span>
+        </div>
+    )
+}
 
 {/* Grid */ }
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

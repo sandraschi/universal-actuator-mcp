@@ -9,6 +9,7 @@ $WindowStyle = if ($Headless) { 'Hidden' } else { 'Normal' }
 # ------------------------------
 
 $env:FASTMCP_LOG_LEVEL = 'WARNING'
+$env:FASTMCP_SHOW_SERVER_BANNER = 'false'
 # universal-actuator-mcp Start - Standards-Compliant SOTA
 Write-Host 'Starting universal-actuator-mcp...' -ForegroundColor Cyan
 

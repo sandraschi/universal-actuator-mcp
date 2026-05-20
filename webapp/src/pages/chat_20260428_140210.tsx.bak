@@ -3,7 +3,7 @@ import { Send, Bot, User, Terminal, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-const API_BASE = '';
+const API_BASE = 'http://localhost:10745';
 
 interface Message {
     role: 'user' | 'assistant';

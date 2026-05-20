@@ -8,3 +8,5 @@ tests/test_output*.txt
 package-lock.json
 # Rust / Zed IDE — rust-analyzer may create target/ at repo root
 target/
+
+_dashboard/
