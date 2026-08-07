@@ -73,18 +73,18 @@ export function About() {
 
             <footer className="pt-16 border-t border-slate-800 flex flex-col items-center gap-8">
                 <div className="flex gap-12">
-                    <a href="#" className="group flex flex-col items-center gap-3">
+                    <a href="https://github.com/sandraschi/universal-actuator-mcp" target="_blank" rel="noopener noreferrer" className="group flex flex-col items-center gap-3">
                         <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 group-hover:bg-slate-800 transition-colors">
                             <Github className="text-slate-400 group-hover:text-emerald-400" size={24} />
                         </div>
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Source</span>
                     </a>
-                    <a href="#" className="group flex flex-col items-center gap-3">
-                        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 group-hover:bg-slate-800 transition-colors">
-                            <Info className="text-slate-400 group-hover:text-emerald-400" size={24} />
+                    <div className="group flex flex-col items-center gap-3 opacity-40 cursor-not-allowed">
+                        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
+                            <Info className="text-slate-400" size={24} />
                         </div>
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Details</span>
-                    </a>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3 text-slate-500 text-sm italic">

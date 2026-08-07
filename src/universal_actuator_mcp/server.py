@@ -10,9 +10,12 @@ import json
 import logging
 import os
 import sys
+import time
+from collections import deque
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import aiohttp
 import psutil
@@ -26,6 +29,77 @@ from .rag import LanceDBRag
 
 logger = logging.getLogger("UnivActHub")
 logging.basicConfig(level=logging.INFO)
+
+
+class ActivityLog:
+    def __init__(self, max_entries=2000):
+        self.max_entries = max_entries
+        self._entries = deque(maxlen=max_entries)
+
+    def add(self, level, kind, detail, meta=None):
+        eid = f"{time.time():.6f}.{uuid4().hex[:6]}"
+        self._entries.append(
+            {
+                "id": eid,
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()),
+                "level": level.upper(),
+                "kind": kind,
+                "detail": detail,
+                "meta": meta or {},
+            }
+        )
+        return eid
+
+    def info(self, kind, detail, **meta):
+        return self.add("INFO", kind, detail, meta)
+
+    def warn(self, kind, detail, **meta):
+        return self.add("WARNING", kind, detail, meta)
+
+    def error(self, kind, detail, **meta):
+        return self.add("ERROR", kind, detail, meta)
+
+    def query(self, limit=50, offset=0, level=None, kind=None, search=None, sort="desc", after_id=None):
+        entries = list(self._entries)
+        if after_id:
+            try:
+                at = float(after_id.split(".")[0])
+                entries = [e for e in entries if float(e["id"].split(".")[0]) > at]
+            except Exception:
+                pass
+        if level:
+            lo = {"DEBUG": 0, "INFO": 1, "WARNING": 2, "ERROR": 3}
+            ml = lo.get(level.upper(), 1)
+            entries = [e for e in entries if lo.get(e["level"], 1) >= ml]
+        if kind:
+            entries = [e for e in entries if e["kind"] == kind]
+        if search:
+            q = search.lower()
+            entries = [e for e in entries if q in e["detail"].lower()]
+        entries.sort(key=lambda e: e["id"], reverse=(sort == "desc"))
+        total = len(entries)
+        page = entries[offset : offset + limit]
+        return {
+            "entries": page,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "max_entries": self.max_entries,
+            "sort": sort,
+        }
+
+    def stats(self):
+        levels, kinds = {}, {}
+        for e in self._entries:
+            levels[e["level"]] = levels.get(e["level"], 0) + 1
+            kinds[e["kind"]] = kinds.get(e["kind"], 0) + 1
+        return {"total": len(self._entries), "max_entries": self.max_entries, "levels": levels, "kinds": kinds}
+
+    def clear(self):
+        self._entries.clear()
+
+
+_activity_log = ActivityLog()
 
 # Point to the existing state directory in the root
 STATE_DIR = Path(__file__).parent.parent.parent / "backend" / "state"
@@ -707,6 +781,39 @@ async def telemetry_rest(request):
     return JSONResponse(res)
 
 
+@mcp.custom_route("/api/logs", methods=["GET"])
+async def api_log_query(request):
+    limit = int(request.query_params.get("limit", 50))
+    offset = int(request.query_params.get("offset", 0))
+    level = request.query_params.get("level")
+    kind = request.query_params.get("kind")
+    search = request.query_params.get("search")
+    sort = request.query_params.get("sort", "desc")
+    after_id = request.query_params.get("after_id")
+    return JSONResponse(
+        _activity_log.query(
+            limit=limit,
+            offset=offset,
+            level=level,
+            kind=kind,
+            search=search,
+            sort=sort,
+            after_id=after_id,
+        )
+    )
+
+
+@mcp.custom_route("/api/logs/stats", methods=["GET"])
+async def api_log_stats(request):
+    return JSONResponse(_activity_log.stats())
+
+
+@mcp.custom_route("/api/logs/clear", methods=["POST"])
+async def api_log_clear(request):
+    _activity_log.clear()
+    return JSONResponse({"success": True})
+
+
 @mcp.custom_route("/chat", methods=["POST"])
 async def chat_rest(request):
     data = await request.json()
@@ -720,14 +827,45 @@ async def chat_rest(request):
     )
 
 
+@mcp.custom_route("/api/shutdown", methods=["POST"])
+async def api_shutdown(request):
+    logger.warning("Shutdown requested via REST API")
+    os._exit(0)
+
+
+@mcp.tool()
+async def universal_shutdown(ctx: Context) -> dict:
+    """Shut down the Universal Actuator server gracefully.
+
+    Irreversible — all in-memory state, fleet sessions, and RAG cache are lost.
+
+    ## Return Format
+    {"success": true, "message": str}
+
+    ## Examples
+    - universal_shutdown()
+    """
+    await ctx.info(f"[{ctx.correlation_id}] Shutdown requested via MCP tool")
+    os._exit(0)
+
+
 # ---------------------------------------------------------------------------
 # App Factory (Must remain at bottom to capture all custom_routes)
 # ---------------------------------------------------------------------------
 
-app = mcp.http_app()
+app = mcp.http_app(path="/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:10745",
+        "http://localhost:10982",
+        "http://127.0.0.1:10745",
+        "http://127.0.0.1:10982",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+        "tauri://localhost",
+    ],
+    allow_origin_regex=r"https?://(?:[a-zA-Z0-9-]+\.ts\.net|.*?\.tail-[a-f0-9]+\.ts\.net|tauri\.localhost|localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|100\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?$|^tauri://localhost$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

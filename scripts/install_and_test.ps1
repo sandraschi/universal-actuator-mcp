@@ -1,4 +1,4 @@
-# Universal Actuator — Dependency Install + Smoke Test
+# Universal Actuator - Dependency Install + Smoke Test
 # Run from: D:\Dev\repos\universal-actuator-mcp\
 # Usage: powershell -ExecutionPolicy Bypass -File .\scripts\install_and_test.ps1
 

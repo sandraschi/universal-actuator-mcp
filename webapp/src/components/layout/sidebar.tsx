@@ -14,7 +14,8 @@ import {
     Cpu,
     HelpCircle,
     Info,
-    Library
+    Library,
+    List
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,6 +36,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         { href: '/apps', label: 'Apps Hub', icon: Grid },
         { href: '/library', label: 'Media Library', icon: Library },
         { href: '/settings', label: 'Gateway Config', icon: Settings },
+        { href: '/logs', label: 'Logs', icon: List },
         { href: '/status', label: 'System Status', icon: Activity },
         { href: '/help', label: 'Help', icon: HelpCircle },
         { href: '/about', label: 'About', icon: Info },

@@ -65,7 +65,6 @@ const MediaLibrary = () => {
             const res = await fetch(`${BACKEND}/library/ingest`, { method: 'POST' });
             if (!res.ok) throw new Error(`Sync failed: ${res.status}`);
             const data = await res.json();
-            console.log('Sync results:', data);
             await fetchLibrary(searchQuery, activeFilter);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Sync failed');

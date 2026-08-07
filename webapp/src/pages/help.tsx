@@ -95,9 +95,9 @@ export function Help() {
                                 The Universal Actuator follows the <strong>Materialist Optimization Framework</strong>.
                                 Every tool call is strictly validated against current system state to ensure deterministic outcomes.
                             </p>
-                            <div className="flex items-center gap-2 text-emerald-300 font-medium">
+                            <div className="flex items-center gap-2 text-slate-500">
                                 <LinkIcon size={16} />
-                                <span>Visit documentation portal</span>
+                                <span>Documentation portal — not yet available</span>
                             </div>
                         </div>
                         <div className="space-y-4">
@@ -106,9 +106,9 @@ export function Help() {
                                 A non-interactive 'Dead Man Switch' is active for all high-risk operations.
                                 If the orchestration heartbeat is lost, all active domain agents immediately enter safe-state.
                             </p>
-                            <div className="flex items-center gap-2 text-emerald-300 font-medium cursor-pointer hover:underline">
+                            <div className="flex items-center gap-2 text-slate-500">
                                 <Shield size={16} />
-                                <span>Emergency protocol specification</span>
+                                <span>Emergency protocol — not yet available</span>
                             </div>
                         </div>
                     </div>

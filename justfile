@@ -1,12 +1,13 @@
-﻿set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
+import 'scripts/just/fleet.just'
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
+# --- Dashboard ---
 
 # Open the interactive recipe dashboard in the browser
 default:
     @just --list
 
-# ── Quality ───────────────────────────────────────────────────────────────────
+# --- Quality ---
 
 # Execute Ruff SOTA v13.1 linting
 lint:
@@ -23,7 +24,7 @@ fix:
     Set-Location '{{justfile_directory()}}\webapp'
     npx @biomejs/biome check --write .
 
-# ── Hardening ─────────────────────────────────────────────────────────────────
+# --- Hardening ---
 
 # Execute Bandit security audit
 check-sec:
@@ -35,7 +36,7 @@ audit-deps:
     Set-Location '{{justfile_directory()}}'
     uv run safety check
 
-# ── Operations ─────────────────────────────────────────────────────────────────
+# --- Operations ---
 
 # Start the Universal Actuator Hub (SSE)
 run:
@@ -77,3 +78,8 @@ test-cov:
     Set-Location '{{justfile_directory()}}'
     uv run pytest tests/ --cov=src/universal_actuator_mcp --cov-report=term-missing
 
+# Bootstrap: install dev deps + pre-commit hook
+bootstrap:
+    uv sync --group dev
+    uv run pre-commit install
+    Write-Host "Pre-commit hooks installed." -ForegroundColor Green

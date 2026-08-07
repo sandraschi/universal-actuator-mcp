@@ -1,8 +1,11 @@
 'use client';
 
 import { HelpCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Topbar() {
+    const navigate = useNavigate();
+
     return (
         <header className="flex h-14 items-center justify-between border-b border-slate-800 bg-slate-950/50 px-6 backdrop-blur-xl">
             <div className="flex items-center gap-4">
@@ -12,16 +15,8 @@ export function Topbar() {
             </div>
 
             <div className="flex items-center gap-2">
-                {/* System Status Indicator */}
-                <div className="mr-4 flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-500 border border-emerald-500/20">
-                    <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                    </span>
-                    System Online
-                </div>
-
                 <button
+                    onClick={() => navigate('/help')}
                     className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-800 bg-slate-900/50 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
                     title="Help"
                 >

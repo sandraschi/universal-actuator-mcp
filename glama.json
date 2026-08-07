@@ -1,39 +1,19 @@
 {
     "$schema": "https://glama.ai/mcp/schemas/server.json",
-    "maintainers": [
-        "sandraschi"
-    ],
+    "maintainers": ["sandraschi"],
     "name": "universal-actuator-mcp",
     "description": "A federation facade that consolidates multiple MCP servers into a single 'universal' tool interface. Reduces semantic entropy by routing actions to domain-specific sub-servers.",
     "type": "mcp_server",
     "status": "beta",
-    "framework": "TypeScript / Node.js",
-    "version": "1.0.0",
+    "framework": "Python / FastMCP",
+    "version": "2.0.0",
     "icon": "hub",
     "homeUrl": "https://github.com/sandraschi/universal-actuator-mcp",
-    "tools": 1,
-    "transport": [
-        "stdio"
-    ],
-    "keywords": [
-        "federation",
-        "router",
-        "facade",
-        "universal",
-        "automation"
-    ],
+    "tools": 13,
+    "transport": ["stdio", "sse"],
+    "keywords": ["federation", "router", "facade", "universal", "automation"],
     "features": {
-        "federation": {
-            "enabled": true,
-            "note": "Routes requests to sub-servers defined in config.json"
-        },
-        "domains": {
-            "enabled": true,
-            "list": [
-                "browser",
-                "office",
-                "system"
-            ]
-        }
+        "federation": {"enabled": true, "note": "Routes requests to sub-servers defined in config.json"},
+        "domains": {"enabled": true, "list": ["browser", "office", "system", "media", "knowledge", "devices"]}
     }
 }

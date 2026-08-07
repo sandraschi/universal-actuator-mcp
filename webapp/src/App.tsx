@@ -10,6 +10,7 @@ import { ToolsPage } from '@/pages/tools';
 import { LocalLLM } from '@/pages/llm';
 import { Help } from '@/pages/help';
 import { About } from '@/pages/about';
+import Logs from '@/pages/logs';
 import MediaLibrary from '@/pages/library';
 import { Status } from '@/pages/status';
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/library" element={<MediaLibrary />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/logs" element={<Logs />} />
           <Route path="/status" element={<Status />} />
           <Route path="/about" element={<About />} />
           <Route path="*" element={<Navigate to="/" replace />} />

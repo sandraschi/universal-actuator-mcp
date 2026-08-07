@@ -182,32 +182,7 @@ export function ToolsPage() {
             setServers(mappedServers);
         } catch (error) {
             console.error("Failed to fetch MCP servers:", error);
-            // Fallback for demo if backend is not responding
-            setServers([
-                {
-                    name: "filesystem-hub",
-                    description: "Universal file operations and audit logs",
-                    status: "online",
-                    type: "stdio",
-                    tools: [
-                        { name: "read_file", description: "Read complete file contents", inputSchema: { required: ["path"] } },
-                        { name: "write_file", description: "Write content to files safely", inputSchema: { required: ["path", "content"] } }
-                    ],
-                    capabilities: ["resources", "tools"],
-                    version: "2.14.5"
-                },
-                {
-                    name: "plex-plus",
-                    description: "Premium media management and streaming",
-                    status: "online",
-                    type: "sse",
-                    tools: [
-                        { name: "scan_library", description: "Trigger library update", inputSchema: { required: ["section"] } }
-                    ],
-                    capabilities: ["tools"],
-                    version: "1.2.0"
-                }
-            ]);
+            setServers([]);
         } finally {
             setLoading(false);
         }

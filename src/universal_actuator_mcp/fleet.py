@@ -153,7 +153,7 @@ class FleetManager:
             if os.name == "nt":
                 creation_flags = 0x08000000
 
-            proc = subprocess.Popen(  # noqa: S603
+            proc = subprocess.Popen(
                 cmd,
                 cwd=repo_root,
                 stdout=subprocess.DEVNULL,

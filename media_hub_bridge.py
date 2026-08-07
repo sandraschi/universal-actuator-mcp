@@ -27,7 +27,7 @@ mcp = FastMCP(
 )
 
 # Enable CORS for industrial SOTA frontend
-app = mcp.http_app()
+app = mcp.http_app(path="/")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -147,8 +147,10 @@ async def run_servers():
         raise
     logger.info("WebSocket bridge listening on port %s", ws_port)
 
-    # Configure Uvicorn for FastMCP's HTTP/SSE layer (mcp.http_app() already has CORS)
-    uvicorn_config = uvicorn.Config(mcp.http_app(), host="127.0.0.1", port=10747, log_level="info", loop="asyncio")
+    # Configure Uvicorn for FastMCP's HTTP/SSE layer (mcp.http_app(path="/") already has CORS)
+    uvicorn_config = uvicorn.Config(
+        mcp.http_app(path="/"), host="127.0.0.1", port=10747, log_level="info", loop="asyncio"
+    )
     mcp_server = uvicorn.Server(uvicorn_config)
 
     logger.info("Media Hub SSE Server (MCP) starting on port 10747...")

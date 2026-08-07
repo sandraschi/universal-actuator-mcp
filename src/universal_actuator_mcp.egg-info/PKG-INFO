@@ -8,7 +8,7 @@ Requires-Dist: aiofiles>=25.1.0
 Requires-Dist: aiohttp>=3.13.3
 Requires-Dist: beautifulsoup4>=4.14.3
 Requires-Dist: fastapi>=0.134.0
-Requires-Dist: fastmcp<4,>=3.2.0
+Requires-Dist: fastmcp<4,>=3.4.4
 Requires-Dist: lancedb>=0.14.0
 Requires-Dist: pyarrow>=19.0.0
 Requires-Dist: sentence-transformers>=3.4.0
@@ -22,7 +22,6 @@ Requires-Dist: pydantic-settings>=2.13.1
 Requires-Dist: python-dateutil>=2.9.0.post0
 Requires-Dist: python-dotenv>=1.2.1
 Requires-Dist: pytz>=2025.2
-Requires-Dist: ruff>=0.15.2
 Requires-Dist: sqlalchemy>=2.0.47
 Requires-Dist: structlog>=25.5.0
 Requires-Dist: tenacity>=9.1.4
@@ -33,10 +32,23 @@ Requires-Dist: pytest-asyncio>=0.23.0
 Requires-Dist: pytest-cov>=4.1.0
 Requires-Dist: httpx>=0.27.0
 Requires-Dist: prefab-ui>=0.14.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: ruff<0.17,>=0.16.0; extra == "dev"
+Requires-Dist: pre-commit>=4.6.1; extra == "dev"
 
 # Universal Actuator MCP Hub (Federation Gateway)
 
-[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2.0-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+<p align="center">
+  <a href="https://github.com/casey/just"><img src="https://img.shields.io/badge/just-ready_to_go-7c5cfc?style=flat-square&logo=just&logoColor=white" alt="Just"></a>
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+  <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
+  <a href="https://biomejs.dev"><img src="https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white" alt="Biome"></a>
+  <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.2-7c5cfc?style=flat-square" alt="FastMCP"></a>
+</p>
+
+
+> 📖 **[Installation Guide](INSTALL.md)** — quick start, manual setup, and troubleshooting
 
 > **Federated consumption router and live-dashboard hub for the RoboFang fleet (Plex, Calibre, Immich).**
 
@@ -48,6 +60,20 @@ Requires-Dist: prefab-ui>=0.14.0
 [![Status](https://img.shields.io/badge/Status-v2.0.0-emerald)]()
 
 ---
+
+## Quick Start
+
+```powershell
+git clone https://github.com/sandraschi/universal-actuator-mcp
+cd universal-actuator-mcp
+just
+```
+
+This opens an interactive dashboard showing all available commands. Run `just bootstrap` to install dependencies, then `just serve` or `just dev` to start.
+
+### Manual Setup
+
+If you don't have `just` installed:
 
 ## Overview
 

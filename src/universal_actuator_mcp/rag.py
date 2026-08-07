@@ -49,7 +49,7 @@ class LanceDBRag:
     def _hash_embed(self, text: str) -> list[float]:
         """Deterministic pseudo-embedding from MD5 — fallback when no model loaded."""
         # MD5 is used here for deterministic pseudo-embeddings, not for security.
-        seed = int(hashlib.md5(text.lower().encode()).hexdigest(), 16)  # noqa: S324
+        seed = int(hashlib.md5(text.lower().encode()).hexdigest(), 16)
         vec: list[float] = []
         for i in range(EMBED_DIM):
             val = float((seed >> (i % 64)) & 0xFF) - 127.5
