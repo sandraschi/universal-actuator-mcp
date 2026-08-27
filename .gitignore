@@ -10,3 +10,10 @@ package-lock.json
 target/
 
 _dashboard/
+
+# generated build metadata
+**/*.egg-info/
+__pycache__/
+*.pyc
+*.bak
+*.bak.*
