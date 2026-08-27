@@ -13,7 +13,7 @@ $env:FASTMCP_SHOW_SERVER_BANNER = 'false'
 # universal-actuator-mcp Start - Standards-Compliant SOTA
 Write-Host 'Starting universal-actuator-mcp...' -ForegroundColor Cyan
 
-$BackendPort = 10745
+$BackendPort = 10929
 $FleetStartPath = Join-Path $ProjectRoot "scripts\FleetStartMode.ps1"
 if (-not (Test-Path -LiteralPath $FleetStartPath)) {
     Write-Host "ERROR: Missing vendored launcher helper: $FleetStartPath" -ForegroundColor Red
@@ -44,3 +44,4 @@ try {
 # Package has no __main__.py; server entry is universal_actuator_mcp.server (see server.py if __name__ == "__main__")
 $env:UA_SSE_PORT = "$BackendPort"
 uv run python -m universal_actuator_mcp.server
+

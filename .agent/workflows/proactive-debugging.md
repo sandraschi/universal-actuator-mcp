@@ -13,7 +13,7 @@ When applying functional or structural changes to the FastMCP server, follow thi
 1.  **Apply Logic**: Modify `server.py` or dependencies.
 2.  **Run Sync**: Start the uvicorn server in a synchronous command with high `WaitMsBeforeAsync`.
     ```bash
-    uv run uvicorn universal_actuator_mcp.server:mcp.http_app --factory --port 10745
+    uv run uvicorn universal_actuator_mcp.server:mcp.http_app --factory --port 10929
     ```
 3.  **Monitor StdErr**: Use `WaitMsBeforeAsync: 5000` to capture any initialization tracebacks.
 4.  **Resolve & Repeat**: If a `Traceback` is detected, read the exact error and re-apply a fix **before** informing the user.
@@ -27,3 +27,4 @@ When applying functional or structural changes to the FastMCP server, follow thi
 ## 3. Objective
 
 Minimize "tedious" turns for the USER. Do not report success until the backend is empirically verified over its intended transport.
+

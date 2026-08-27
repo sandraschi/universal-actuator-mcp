@@ -1,5 +1,5 @@
 """
-Universal Actuator MCP Hub — SOTA v14.1.0
+Universal Actuator MCP Hub - SOTA v14.1.0
 Industrial Federation Gateway | FastMCP 3.2 | LanceDB RAG | ctx.sample()
 """
 
@@ -445,7 +445,7 @@ async def rag_semantic_search(query: str, ctx: Context, limit: int = 10, source:
     Args:
         query: Natural language query.
         limit: Max results. Default: 10.
-        source: Optional filter — "calibre", "plex", or "immich".
+        source: Optional filter - "calibre", "plex", or "immich".
 
     Returns:
         Ranked results with _score (lower = more similar).
@@ -468,7 +468,7 @@ async def ingest_fleet_to_rag(ctx: Context) -> dict[str, Any]:
     """
     Bulk-ingest metadata from Calibre, Plex, and Immich into the LanceDB RAG index.
 
-    Fetches up to 500 items per source. Safe to call repeatedly — existing items
+    Fetches up to 500 items per source. Safe to call repeatedly - existing items
     are overwritten by id.
 
     Returns:
@@ -575,14 +575,14 @@ async def agentic_workflow_tool(
     cid = ctx.correlation_id
     await ctx.info(f"[{cid}] agentic_workflow_tool: goal={goal!r}")
 
-    # Phase 1 — Build context
+    # Phase 1 - Build context
     context_block = ""
     if context_depth == "comprehensive":
         try:
             tel = await _get_fleet_telemetry_internal()
             ri = await _rag.stats()
             context_block = (
-                f"\nFleet: {tel.get('fleet_status')} — {tel.get('active_nodes')} active nodes."
+                f"\nFleet: {tel.get('fleet_status')} - {tel.get('active_nodes')} active nodes."
                 f"\nRAG: {ri.get('total_items', 0)} items indexed ({ri.get('embedding_model', 'unknown')})."
             )
         except Exception as e:
@@ -629,7 +629,7 @@ Return ONLY valid JSON, no markdown fences:
 
     await ctx.info(f"[{cid}] Plan: {len(plan.get('steps', []))} steps.")
 
-    # Phase 2 — Execute
+    # Phase 2 - Execute
     steps_taken: list[dict[str, Any]] = []
     for step_def in plan.get("steps", [])[:max_steps]:
         tool_name = step_def.get("tool", "")
@@ -642,7 +642,7 @@ Return ONLY valid JSON, no markdown fences:
             steps_taken.append({"step": step_def, "error": str(e), "status": "failed"})
             await ctx.warning(f"[{cid}] Step failed: {e}")
 
-    # Phase 3 — Audit
+    # Phase 3 - Audit
     success_count = sum(1 for s in steps_taken if s["status"] == "success")
     audit_summary = json.dumps([{"tool": s["step"].get("tool"), "status": s["status"]} for s in steps_taken])
     audit_prompt = f"""Audit this workflow execution:
@@ -837,7 +837,7 @@ async def api_shutdown(request):
 async def universal_shutdown(ctx: Context) -> dict:
     """Shut down the Universal Actuator server gracefully.
 
-    Irreversible — all in-memory state, fleet sessions, and RAG cache are lost.
+    Irreversible - all in-memory state, fleet sessions, and RAG cache are lost.
 
     ## Return Format
     {"success": true, "message": str}
@@ -857,9 +857,9 @@ app = mcp.http_app(path="/")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:10745",
+        "http://localhost:10929",
         "http://localhost:10982",
-        "http://127.0.0.1:10745",
+        "http://127.0.0.1:10929",
         "http://127.0.0.1:10982",
         "http://tauri.localhost",
         "https://tauri.localhost",
@@ -880,9 +880,9 @@ def main():
 
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
-    # SSE port for Universal Actuator Hub (10745); override with UA_SSE_PORT
+    # SSE port for Universal Actuator Hub (10929); override with UA_SSE_PORT
     # If MCP_TRANSPORT is set to 'sse', use it. Otherwise FastMCP handles transport.
-    _sse_port = int(os.environ.get("UA_SSE_PORT", os.environ.get("MCP_PORT", "10745")))
+    _sse_port = int(os.environ.get("UA_SSE_PORT", os.environ.get("MCP_PORT", "10929")))
     _transport = os.environ.get("MCP_TRANSPORT", None)
 
     if _transport == "sse" or os.environ.get("UA_FORCE_SSE"):

@@ -31,10 +31,11 @@ When using custom routes, uvicorn must use the **factory pattern** to ensure the
 **Pattern**: `uvicorn <module>:<fastmcp_instance>.http_app --factory`
 
 ```powershell
-uvicorn universal_actuator_mcp.server:mcp.http_app --factory --port 10745
+uvicorn universal_actuator_mcp.server:mcp.http_app --factory --port 10929
 ```
 
 ## 3. Heuristics
 
 1.  **Transport Consistency**: Custom routes are served over the same transport (HTTP/SSE) as the MCP protocol.
 2.  **Signature Compliance**: Always wrap plain dictionaries in `JSONResponse` to avoid Starlette type-hinting failures.
+
