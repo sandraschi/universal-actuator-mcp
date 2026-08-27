@@ -1,5 +1,5 @@
 """
-SOTA Fleet Integration Layer — Universal Actuator Hub
+SOTA Fleet Integration Layer - Universal Actuator Hub
 Industrial mediation between the Gateway and federated media nodes.
 """
 
@@ -24,7 +24,7 @@ _CONFIG_PATH = str(Path(__file__).parent.parent.parent / "config.json")
 
 
 # ---------------------------------------------------------------------------
-# Config adapter — project config.json uses "servers" not "mcpServers"
+# Config adapter - project config.json uses "servers" not "mcpServers"
 # ---------------------------------------------------------------------------
 
 
@@ -255,7 +255,7 @@ class FleetManager:
             else:
                 counts[source] = 0
                 if isinstance(items, Exception):
-                    logger.warning(f"Fleet fetch: {source} failed — {items}")
+                    logger.warning(f"Fleet fetch: {source} failed - {items}")
                 else:
                     logger.info(f"Fleet fetch: {source} returned no items")
 

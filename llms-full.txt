@@ -1,0 +1,60 @@
+# universal-actuator-mcp — full reference
+
+Industrial Federation Gateway. FastMCP 3.4+, Python 3.12+, dual transport (stdio + SSE on port 10745). Routes actions to 15+ sub-servers via config.json.
+
+## Tools
+
+### universal_actuator(domain, action, ...)
+Portmanteau: routes actions to sub-servers. Domains: media (search/recommend), system (info/process), files (list/search).
+
+### universal_status()
+Hub health: registered domains, federation graph connectivity, RAG stats, log count.
+
+### search_federated(query, sources)
+Parallel fan-out search across calibre, plex, immich, docsops, knowledge nodes.
+
+### rag_semantic_search(query)
+Vector similarity search over ingested fleet content via LanceDB (384-dim, all-MiniLM-L6-v2).
+
+### ingest_fleet_to_rag(source)
+Bulk ingest: calibre metadata, plex media, immich assets, docs into LanceDB.
+
+### rag_stats() / rag_clear()
+RAG engine statistics and full reset.
+
+### glom_on(domain)
+Runtime auto-discovery and attachment of a new sub-server.
+
+### get_fleet_telemetry()
+Live telemetry — CPU, memory, uptime, response times from all sub-servers.
+
+### universal_milestone(title, description)
+Record a milestone via Advanced Memory MCP cognitive bridge.
+
+### get_milestones_history()
+Retrieve milestone timeline.
+
+### list_ollama_models()
+Query local Ollama for available models.
+
+### agentic_workflow_tool(goal)
+SEP-1577: Plan → Execute → Audit via ctx.sample().
+
+### universal_shutdown()
+Graceful server termination.
+
+## REST Endpoints
+
+- GET /api/v1/health — liveness
+- GET /api/v1/deps — dependency versions
+- GET /api/v1/models — Ollama models
+- GET /telemetry — live telemetry
+- GET/POST /api/logs — ring-buffer log queries
+- POST /chat — chat interface
+- POST /api/shutdown — terminate server
+- GET/POST /library, /library/ingest — media library
+
+## Ports
+
+- Backend: 10745 (SSE + REST)
+- Webapp: 10982 (Vite dev)

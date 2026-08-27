@@ -47,7 +47,7 @@ class LanceDBRag:
     # ------------------------------------------------------------------
 
     def _hash_embed(self, text: str) -> list[float]:
-        """Deterministic pseudo-embedding from MD5 — fallback when no model loaded."""
+        """Deterministic pseudo-embedding from MD5 - fallback when no model loaded."""
         # MD5 is used here for deterministic pseudo-embeddings, not for security.
         seed = int(hashlib.md5(text.lower().encode()).hexdigest(), 16)
         vec: list[float] = []
@@ -106,7 +106,7 @@ class LanceDBRag:
             logger.info("RAG: SentenceTransformer loaded (384-dim vectors).")
         except ImportError:
             logger.warning(
-                "RAG: sentence-transformers not installed — using hash embeddings. "
+                "RAG: sentence-transformers not installed - using hash embeddings. "
                 "Install with: pip install sentence-transformers"
             )
 

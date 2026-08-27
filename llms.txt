@@ -1,0 +1,21 @@
+# universal-actuator-mcp
+
+> Industrial federation gateway — consolidates 15+ MCP servers into a single universal tool interface with RAG, fleet telemetry, and agentic workflows.
+
+## Tools
+
+- `universal_actuator(domain, action, ...)` — route actions to sub-servers (media/system/files)
+- `universal_status()` — hub health, federation graph, registered domains
+- `search_federated(query, sources)` — parallel search across calibre/plex/immich/docs/knowledge
+- `rag_semantic_search(query)` — vector search over ingested fleet content
+- `ingest_fleet_to_rag(source)` — bulk ingest from fleet nodes into LanceDB
+- `glom_on(domain)` — auto-discover and attach a sub-server at runtime
+- `get_fleet_telemetry()` — live telemetry from all sub-servers
+- `universal_milestone(title, description)` — record milestone via Advanced Memory
+- `agentic_workflow_tool(goal)` — autonomous 3-phase Plan→Execute→Audit
+- `universal_shutdown()` — terminate the hub
+
+## Links
+
+- Repo: https://github.com/sandraschi/universal-actuator-mcp
+- Full reference: https://github.com/sandraschi/universal-actuator-mcp/blob/main/llms-full.txt
