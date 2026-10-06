@@ -2,11 +2,11 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User, Terminal, Wifi, WifiOff, Eraser, Download, Sparkles, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { API_BASE } from '@/lib/api';
 
 const LS_HISTORY = 'uamcp-chat-history';
 const LS_PERSONALITY = 'uamcp-chat-personality';
 const MAX_HISTORY = 100;
-const API_BASE = '';
 
 interface Message {
   role: 'user' | 'assistant';
