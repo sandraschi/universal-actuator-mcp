@@ -1,0 +1,614 @@
+[
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "search", "payload": {"query": "neural networks", "domain": "all"}},
+    "returns": {"status": "success", "routing_key": "media.search", "results": {"calibre": [{"title": "Deep Learning", "author": "Goodfellow", "source": "calibre", "type": "book", "id": "42"}], "plex": [], "immich": [], "docsops": [], "knowledge": []}},
+    "description": "Route federated search through portmanteau media.search"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "search", "payload": {"query": "Dune", "domain": "calibre"}},
+    "returns": {"status": "success", "routing_key": "media.search", "results": {"calibre": [{"title": "Dune", "author": "Frank Herbert", "source": "calibre", "type": "book", "id": "101"}], "total_hits": 1}},
+    "description": "Search only Calibre via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "search", "payload": {"query": "Inception", "domain": "plex"}},
+    "returns": {"status": "success", "routing_key": "media.search", "results": {"plex": [{"title": "Inception", "author": "2010", "source": "plex", "type": "movie", "id": "456"}]}},
+    "description": "Search only Plex via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "ingest", "payload": {}},
+    "returns": {"status": "success", "routing_key": "media.ingest", "ingested_per_source": {"calibre": 450, "plex": 320, "immich": 180, "docsops": 120, "knowledge": 90}, "total_ingested": 1160},
+    "description": "Trigger full fleet RAG ingest via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "rag_search", "payload": {"query": "sci-fi", "limit": 5}},
+    "returns": {"status": "success", "routing_key": "media.rag_search", "results": [{"id": "42", "title": "Dune", "author": "Frank Herbert", "source": "calibre", "type": "book", "_score": 0.31}], "result_count": 5},
+    "description": "Semantic RAG search via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "rag_search", "payload": {"query": "landscape photography", "limit": 10, "source": "immich"}},
+    "returns": {"status": "success", "routing_key": "media.rag_search", "results": [{"id": "img_789", "title": "DSC_0123.jpg", "author": "2026-01-15", "source": "immich", "type": "photo", "_score": 0.42}], "result_count": 8},
+    "description": "Filtered RAG search for immich photos via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "rag_search", "payload": {"query": "documentary space", "limit": 3, "source": "plex"}},
+    "returns": {"status": "success", "routing_key": "media.rag_search", "results": [{"id": "plex_789", "title": "The Farthest", "author": "2017", "source": "plex", "type": "movie", "_score": 0.55}], "result_count": 2},
+    "description": "RAG search filtered to Plex source"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "system", "action": "telemetry", "payload": {}},
+    "returns": {"status": "success", "routing_key": "system.telemetry", "fleet_status": "Healthy", "active_nodes": 5, "host_metrics": {"cpu_percent": 23.4, "memory_percent": 62.1, "available_gb": 14.2}},
+    "description": "Get fleet telemetry via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "system", "action": "discover", "payload": {}},
+    "returns": {"status": "success", "routing_key": "system.discover", "discovered_servers": [{"name": "calibre", "active": true, "port": 10720}], "count": 15, "active_count": 5},
+    "description": "Run server discovery via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "system", "action": "models", "payload": {}},
+    "returns": {"status": "success", "routing_key": "system.models", "models": ["llama3:latest", "mistral:latest", "codellama:7b"]},
+    "description": "List Ollama models via portmanteau"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "files", "action": "sync", "payload": {"path": "/home"}},
+    "returns": {"status": "partial_success", "message": "Domain 'files' action 'sync' routed via fallback.", "routing_key": "files.sync"},
+    "description": "Fallback routing for unrecognised domain/action"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "robotics", "action": "status", "payload": {}},
+    "returns": {"status": "partial_success", "message": "Domain 'robotics' action 'status' routed via fallback.", "routing_key": "robotics.status"},
+    "description": "Fallback routing for robotics domain"
+  },
+  {
+    "tool": "universal_status",
+    "params": {},
+    "returns": {"fleet": {"fleet_status": "Healthy", "active_nodes": 5, "total_discovered": 15, "host_metrics": {"cpu_percent": 23.4, "memory_percent": 62.1, "available_gb": 14.2}, "node_details": [{"name": "calibre", "port": 10720, "status": "online"}]}, "rag": {"initialized": true, "total_items": 1160, "embedding_model": "all-MiniLM-L6-v2", "source_distribution": {"calibre": 450, "plex": 320, "immich": 180, "docsops": 120, "knowledge": 90}}, "system": {"version": "2.1.0", "mcp_version": "3.2.0"}},
+    "description": "Full aggregated health dashboard"
+  },
+  {
+    "tool": "universal_status",
+    "params": {},
+    "returns": {"fleet": {"fleet_status": "Standalone", "active_nodes": 0, "total_discovered": 0, "host_metrics": {"cpu_percent": 12.0, "memory_percent": 45.0, "available_gb": 28.5}}, "rag": {"initialized": true, "total_items": 0, "embedding_model": "hash-fallback"}, "system": {"version": "2.1.0", "mcp_version": "3.2.0"}},
+    "description": "Health dashboard when no fleet nodes are connected"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "reinforcement learning", "domain": "all"},
+    "returns": {"query": "reinforcement learning", "domain": "all", "results": {"calibre": [{"title": "Reinforcement Learning: An Introduction", "author": "Sutton & Barto", "source": "calibre", "type": "book", "id": "88"}], "plex": [{"title": "AlphaGo", "author": "2017", "source": "plex", "type": "movie", "id": "555"}], "immich": [], "docsops": [{"title": "RL Overview", "author": "System", "source": "docsops", "type": "doc", "id": "rl/overview.md"}], "knowledge": [{"title": "Policy Gradient Methods", "author": "Memory", "source": "knowledge", "type": "note", "id": "pg-notes"}]}, "total_hits": 4},
+    "description": "Full federated search across all sources"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "transformer architecture", "domain": "calibre"},
+    "returns": {"query": "transformer architecture", "domain": "calibre", "results": {"calibre": [{"title": "Attention Is All You Need", "author": "Vaswani et al.", "source": "calibre", "type": "book", "id": "99"}, {"title": "Deep Learning with Transformers", "author": "Turner", "source": "calibre", "type": "book", "id": "100"}], "plex": [], "immich": [], "docsops": [], "knowledge": []}, "total_hits": 2},
+    "description": "Federated search restricted to Calibre"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "david attenborough", "domain": "plex"},
+    "returns": {"query": "david attenborough", "domain": "plex", "results": {"calibre": [], "plex": [{"title": "Planet Earth II", "author": "2016", "source": "plex", "type": "show", "id": "333"}, {"title": "Blue Planet II", "author": "2017", "source": "plex", "type": "show", "id": "334"}], "immich": [], "docsops": [], "knowledge": []}, "total_hits": 2},
+    "description": "Federated search restricted to Plex"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "sunset", "domain": "immich"},
+    "returns": {"query": "sunset", "domain": "immich", "results": {"calibre": [], "plex": [], "immich": [{"title": "IMG_4521.jpg", "author": "2026-06-15T19:32:00", "source": "immich", "type": "photo", "id": "img_4521"}], "docsops": [], "knowledge": []}, "total_hits": 1},
+    "description": "Federated search restricted to Immich"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "FastMCP setup", "domain": "docs"},
+    "returns": {"query": "FastMCP setup", "domain": "docs", "results": {"docsops": [{"title": "FastMCP Quickstart", "author": "System", "source": "docsops", "type": "doc", "id": "fastmcp/quickstart.md", "metadata": {"snippet": "Install FastMCP with pip install fastmcp..."}}]}, "total_hits": 1},
+    "description": "Federated search restricted to Docs MCP"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "meeting notes project", "domain": "knowledge"},
+    "returns": {"query": "meeting notes project", "domain": "knowledge", "results": {"knowledge": [{"title": "Sprint Planning 2026-07", "author": "Memory", "source": "knowledge", "type": "note", "id": "sprint-july", "metadata": {"tags": ["meeting", "planning"], "project": "fleet"}}]}, "total_hits": 1},
+    "description": "Federated search restricted to Knowledge/Advanced Memory"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "", "domain": "all"},
+    "returns": {"query": "", "domain": "all", "results": {"calibre": [{"title": "Recent Books", "author": "Various", "source": "calibre", "type": "book", "id": "recent"}], "plex": [{"title": "Recently Added", "author": "2026", "source": "plex", "type": "movie", "id": "recent"}], "immich": [], "docsops": [], "knowledge": []}, "total_hits": 2},
+    "description": "Empty query triggers list/recent operations on each source"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "machine learning", "domain": "all"},
+    "returns": {"query": "machine learning", "domain": "all", "results": {"calibre": [{"title": "Pattern Recognition and Machine Learning", "author": "Bishop", "source": "calibre", "type": "book", "id": "55"}], "plex": [], "immich": [], "docsops": [], "knowledge": []}, "total_hits": 1},
+    "description": "Federated search with single result from Calibre"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "quantum computing", "domain": "calibre"},
+    "returns": {"query": "quantum computing", "domain": "calibre", "results": {"calibre": [{"title": "Quantum Computing for Computer Scientists", "author": "Yanofsky", "source": "calibre", "type": "book", "id": "201"}, {"title": "Quantum Computation and Quantum Information", "author": "Nielsen & Chuang", "source": "calibre", "type": "book", "id": "202"}], "plex": [], "immich": [], "docsops": [], "knowledge": []}, "total_hits": 2},
+    "description": "Calibre-specific search for quantum computing"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "cooking show", "domain": "plex"},
+    "returns": {"query": "cooking show", "domain": "plex", "results": {"plex": [{"title": "Chef's Table", "author": "2015", "source": "plex", "type": "show", "id": "401"}, {"title": "Salt Fat Acid Heat", "author": "2018", "source": "plex", "type": "show", "id": "402"}, {"title": "Ugly Delicious", "author": "2018", "source": "plex", "type": "show", "id": "403"}]}, "total_hits": 3},
+    "description": "Plex search for cooking documentaries"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "api design", "domain": "docs"},
+    "returns": {"query": "api design", "domain": "docs", "results": {"docsops": [{"title": "REST API Design Guide", "author": "System", "source": "docsops", "type": "doc", "id": "api/rest-guide.md"}, {"title": "FastAPI Patterns", "author": "System", "source": "docsops", "type": "doc", "id": "api/fastapi.md"}]}, "total_hits": 2},
+    "description": "Docs MCP search for API design guides"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "sci-fi novels space exploration", "limit": 5},
+    "returns": {"query": "sci-fi novels space exploration", "source_filter": null, "results": [{"id": "101", "title": "Dune", "author": "Frank Herbert", "source": "calibre", "type": "book", "_score": 0.31}, {"id": "102", "title": "2001: A Space Odyssey", "author": "Arthur C. Clarke", "source": "calibre", "type": "book", "_score": 0.38}, {"id": "103", "title": "The Martian", "author": "Andy Weir", "source": "calibre", "type": "book", "_score": 0.45}], "result_count": 3, "index_size": 1160, "embedding_model": "all-MiniLM-L6-v2"},
+    "description": "Semantic search for sci-fi books across full index"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "nature wildlife documentary", "limit": 3, "source": "plex"},
+    "returns": {"query": "nature wildlife documentary", "source_filter": "plex", "results": [{"id": "333", "title": "Planet Earth II", "author": "2016", "source": "plex", "type": "show", "_score": 0.28}, {"id": "334", "title": "Blue Planet II", "author": "2017", "source": "plex", "type": "show", "_score": 0.35}], "result_count": 2, "index_size": 1160, "embedding_model": "all-MiniLM-L6-v2"},
+    "description": "Semantic search filtered to Plex source"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "conference presentation machine learning", "limit": 10, "source": "immich"},
+    "returns": {"query": "conference presentation machine learning", "source_filter": "immich", "results": [{"id": "img_8901", "title": "NeurIPS_2025_Keynote.jpg", "author": "2025-12-10", "source": "immich", "type": "photo", "_score": 0.22}], "result_count": 1, "index_size": 1160, "embedding_model": "hash-fallback"},
+    "description": "Immich photo search with hash-embedding fallback"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "python async programming", "limit": 5},
+    "returns": {"query": "python async programming", "source_filter": null, "results": [{"id": "doc_44", "title": "Async Python Guide", "author": "System", "source": "docsops", "type": "doc", "_score": 0.19}, {"id": "note_async", "title": "Async/Await Patterns", "author": "Memory", "source": "knowledge", "type": "note", "_score": 0.33}], "result_count": 2, "index_size": 1160},
+    "description": "Cross-source semantic search returning docs and knowledge"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "history of rome", "limit": 10, "source": "calibre"},
+    "returns": {"query": "history of rome", "source_filter": "calibre", "results": [{"id": "301", "title": "SPQR", "author": "Mary Beard", "source": "calibre", "type": "book", "_score": 0.15}, {"id": "302", "title": "The History of the Decline and Fall of the Roman Empire", "author": "Edward Gibbon", "source": "calibre", "type": "book", "_score": 0.21}], "result_count": 2, "index_size": 1160},
+    "description": "Calibre-specific semantic search for history books"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "", "limit": 5},
+    "returns": {"query": "", "source_filter": null, "results": [], "result_count": 0, "index_size": 1160},
+    "description": "Empty query returns no semantic results"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "rare obscure niche topic xyz", "limit": 5},
+    "returns": {"query": "rare obscure niche topic xyz", "source_filter": null, "results": [], "result_count": 0, "index_size": 1160},
+    "description": "No-match semantic search returns empty array"
+  },
+  {
+    "tool": "ingest_fleet_to_rag",
+    "params": {},
+    "returns": {"ingested_per_source": {"calibre": 450, "plex": 320, "immich": 180, "docsops": 120, "knowledge": 90}, "total_ingested": 1160, "rag_stats": {"initialized": true, "total_items": 1160, "embedding_model": "all-MiniLM-L6-v2", "source_distribution": {"calibre": 450, "plex": 320, "immich": 180, "docsops": 120, "knowledge": 90}}},
+    "description": "Full fleet RAG ingest from all 5 sources"
+  },
+  {
+    "tool": "ingest_fleet_to_rag",
+    "params": {},
+    "returns": {"ingested_per_source": {"calibre": 0, "plex": 0, "immich": 0, "docsops": 0, "knowledge": 0}, "total_ingested": 0, "rag_stats": {"initialized": true, "total_items": 1160, "embedding_model": "all-MiniLM-L6-v2"}},
+    "description": "RAG ingest when all sources return empty (no new items)"
+  },
+  {
+    "tool": "rag_stats",
+    "params": {},
+    "returns": {"initialized": true, "total_items": 1160, "embedding_model": "all-MiniLM-L6-v2", "db_path": "D:\\Dev\\repos\\universal-actuator-mcp\\backend\\state\\lancedb", "source_distribution": {"calibre": 450, "plex": 320, "immich": 180, "docsops": 120, "knowledge": 90}},
+    "description": "RAG index statistics with populated index"
+  },
+  {
+    "tool": "rag_stats",
+    "params": {},
+    "returns": {"initialized": false, "total_items": 0, "embedding_model": "none"},
+    "description": "RAG stats when index has not been initialized"
+  },
+  {
+    "tool": "rag_stats",
+    "params": {},
+    "returns": {"initialized": true, "total_items": 0, "embedding_model": "hash-fallback", "db_path": "D:\\Dev\\repos\\universal-actuator-mcp\\backend\\state\\lancedb", "source_distribution": {}},
+    "description": "RAG stats with empty index using hash-embedding fallback"
+  },
+  {
+    "tool": "rag_clear",
+    "params": {},
+    "returns": {"status": "cleared", "timestamp": "2026-07-14T12:00:00"},
+    "description": "Clear the RAG index entirely"
+  },
+  {
+    "tool": "rag_clear",
+    "params": {},
+    "returns": {"status": "cleared", "timestamp": "2026-07-14T12:05:00"},
+    "description": "Reclear after fresh ingest (idempotent)"
+  },
+  {
+    "tool": "glom_on",
+    "params": {},
+    "returns": {"discovered_servers": [{"name": "calibre", "source": "C:/Users/sandr/AppData/Roaming/Claude/claude_desktop_config.json", "command": "python -m calibre_mcp.server", "active": true, "port": 10720}, {"name": "plex", "source": "C:/Users/sandr/AppData/Roaming/Claude/claude_desktop_config.json", "command": "python -m plex_mcp.server", "active": true, "port": 10740}, {"name": "UnknownService@10839", "source": "PortScan", "active": true, "port": 10839}], "count": 12, "active_count": 5, "active_ports": [10720, 10740, 10732, 10795, 10839], "scan_range": "10700-10900"},
+    "description": "Full discovery with config files and port scan"
+  },
+  {
+    "tool": "glom_on",
+    "params": {},
+    "returns": {"discovered_servers": [], "count": 0, "active_count": 0, "active_ports": [], "scan_range": "10700-10900"},
+    "description": "Discovery when no config files exist and no ports are active"
+  },
+  {
+    "tool": "glom_on",
+    "params": {},
+    "returns": {"discovered_servers": [{"name": "UnknownService@10732", "source": "PortScan", "active": true, "port": 10732}], "count": 1, "active_count": 1, "active_ports": [10732]},
+    "description": "Discovery finding only unknown services via port scan"
+  },
+  {
+    "tool": "get_fleet_telemetry",
+    "params": {},
+    "returns": {"fleet_status": "Healthy", "active_nodes": 5, "total_discovered": 12, "host_metrics": {"cpu_percent": 23.4, "memory_percent": 62.1, "available_gb": 14.2}, "node_details": [{"name": "calibre", "port": 10720, "status": "online", "source": "C:/Users/.../claude_desktop_config.json"}, {"name": "plex", "port": 10740, "status": "online", "source": "C:/Users/.../claude_desktop_config.json"}, {"name": "knowledge", "port": 10732, "status": "online", "source": "C:/Users/.../mcp_config.json"}], "telemetry_timestamp": "2026-07-14T12:00:00"},
+    "description": "Healthy fleet with CPU/RAM host metrics"
+  },
+  {
+    "tool": "get_fleet_telemetry",
+    "params": {},
+    "returns": {"fleet_status": "Standalone", "active_nodes": 0, "total_discovered": 0, "host_metrics": {"cpu_percent": 8.2, "memory_percent": 35.0, "available_gb": 32.1}, "node_details": [], "telemetry_timestamp": "2026-07-14T12:00:00"},
+    "description": "Standalone telemetry when no fleet nodes found"
+  },
+  {
+    "tool": "get_fleet_telemetry",
+    "params": {},
+    "returns": {"fleet_status": "Healthy", "active_nodes": 1, "total_discovered": 3, "host_metrics": {"cpu_percent": 95.0, "memory_percent": 88.0, "available_gb": 1.5}, "node_details": [{"name": "calibre", "port": 10720, "status": "online"}], "telemetry_timestamp": "2026-07-14T12:00:00"},
+    "description": "High-load telemetry with minimal available RAM"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "RAG Index Populated", "description": "Successfully ingested 1160 items from 5 fleet sources.", "kind": "achievement"},
+    "returns": {"status": "recorded", "milestone": {"title": "RAG Index Populated", "description": "Successfully ingested 1160 items from 5 fleet sources.", "type": "achievement", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record an achievement milestone after RAG ingest"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Server Started", "description": "Universal Actuator Hub v2.1.0 initialised on port 10745", "kind": "info"},
+    "returns": {"status": "recorded", "milestone": {"title": "Server Started", "description": "Universal Actuator Hub v2.1.0 initialised on port 10745", "type": "info", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record an info milestone at startup"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Fleet Connection Lost", "description": "Plex and Immich both unreachable on port scan", "kind": "warning"},
+    "returns": {"status": "recorded", "milestone": {"title": "Fleet Connection Lost", "description": "Plex and Immich both unreachable on port scan", "type": "warning", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record a warning milestone when fleet nodes go offline"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Research Sprint Complete", "description": "Reviewed 15 papers on transformer architectures from Calibre library", "kind": "achievement"},
+    "returns": {"status": "recorded", "milestone": {"title": "Research Sprint Complete", "description": "Reviewed 15 papers on transformer architectures from Calibre library", "type": "achievement", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record research sprint completion"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Ollama Model Switched", "description": "Changed default model to codellama:7b for code tasks", "kind": "info"},
+    "returns": {"status": "recorded", "milestone": {"title": "Ollama Model Switched", "description": "Changed default model to codellama:7b for code tasks", "type": "info", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record model configuration change"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Ingest Error", "description": "Doc search failed: connection refused on port 10795", "kind": "warning"},
+    "returns": {"status": "recorded", "milestone": {"title": "Ingest Error", "description": "Doc search failed: connection refused on port 10795", "type": "warning", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record warning for sub-server connection failure"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Weekly Maintenance", "description": "Cleared and re-ingested RAG index: 1120 items indexed", "kind": "info"},
+    "returns": {"status": "recorded", "milestone": {"title": "Weekly Maintenance", "description": "Cleared and re-ingested RAG index: 1120 items indexed", "type": "info", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record weekly maintenance activity"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "New Calibre Import", "description": "Added 45 new books to Calibre library, RAG updated", "kind": "achievement"},
+    "returns": {"status": "recorded", "milestone": {"title": "New Calibre Import", "description": "Added 45 new books to Calibre library, RAG updated", "type": "achievement", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record library expansion milestone"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Configuration Updated", "description": "Added Immich sub-server to fleet config.json", "kind": "info"},
+    "returns": {"status": "recorded", "milestone": {"title": "Configuration Updated", "description": "Added Immich sub-server to fleet config.json", "type": "info", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Record configuration change"
+  },
+  {
+    "tool": "get_milestones_history",
+    "params": {},
+    "returns": {"milestones": [{"title": "Server Started", "description": "Universal Actuator Hub v2.1.0 initialised on port 10745", "type": "info", "timestamp": "2026-07-14T10:00:00"}, {"title": "RAG Index Populated", "description": "Successfully ingested 1160 items from 5 fleet sources.", "type": "achievement", "timestamp": "2026-07-14T10:05:00"}, {"title": "Fleet Connection Lost", "description": "Plex and Immich both unreachable on port scan", "type": "warning", "timestamp": "2026-07-14T11:00:00"}], "count": 3},
+    "description": "Retrieve all recorded milestones"
+  },
+  {
+    "tool": "get_milestones_history",
+    "params": {},
+    "returns": {"milestones": [], "count": 0},
+    "description": "Milestones history when no milestones have been recorded"
+  },
+  {
+    "tool": "get_milestones_history",
+    "params": {},
+    "returns": {"milestones": [{"title": "Server Started", "description": "Hub v2.1.0 initialised", "type": "info", "timestamp": "2026-07-01T10:00:00"}, {"title": "Weekly Maintenance", "description": "Re-indexed 1120 items", "type": "info", "timestamp": "2026-07-07T10:00:00"}, {"title": "RAG Index Populated", "description": "Ingested 1160 items from 5 fleet sources", "type": "achievement", "timestamp": "2026-07-14T10:00:00"}], "count": 3},
+    "description": "Weekly milestone progression over 2 weeks"
+  },
+  {
+    "tool": "list_ollama_models",
+    "params": {},
+    "returns": ["llama3:latest", "mistral:latest", "codellama:7b", "llama2-uncensored:latest", "mixtral:8x7b"],
+    "description": "Ollama models when instance is running with multiple models"
+  },
+  {
+    "tool": "list_ollama_models",
+    "params": {},
+    "returns": ["llama3", "mistral"],
+    "description": "Fallback models when Ollama is not reachable"
+  },
+  {
+    "tool": "list_ollama_models",
+    "params": {},
+    "returns": ["llama3:latest"],
+    "description": "Ollama models with single available model"
+  },
+  {
+    "tool": "list_ollama_models",
+    "params": {},
+    "returns": ["codellama:7b", "codellama:13b", "codellama:34b", "llama3:70b", "mistral:7b", "mixtral:8x22b", "phi3:mini", "phi3:medium"],
+    "description": "Ollama with extensive model catalog"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Search my Calibre library for books about reinforcement learning, check my Plex for related documentaries, log the findings as a milestone, and give me a summary.", "max_steps": 5, "context_depth": "comprehensive"},
+    "returns": {"goal": "Search my Calibre library for books about reinforcement learning, check my Plex for related documentaries, log the findings as a milestone, and give me a summary.", "correlation_id": "a1b2c3d4e5f6", "plan": {"steps": [{"step": 1, "tool": "search_federated", "args": {"query": "reinforcement learning", "domain": "calibre"}, "rationale": "Find RL books in Calibre"}, {"step": 2, "tool": "search_federated", "args": {"query": "reinforcement learning documentary", "domain": "plex"}, "rationale": "Find RL documentaries in Plex"}, {"step": 3, "tool": "universal_milestone", "args": {"title": "RL Research", "description": "Found RL content across fleet", "kind": "achievement"}, "rationale": "Log findings"}], "expected_outcome": "List of books and documentaries found, milestone recorded"}, "steps_taken": [{"step": {"step": 1, "tool": "search_federated", "args": {"query": "reinforcement learning", "domain": "calibre"}}, "result": "{'total_hits': 2}", "status": "success"}, {"step": {"step": 2, "tool": "search_federated", "args": {"query": "reinforcement learning documentary", "domain": "plex"}}, "result": "{'total_hits': 1}", "status": "success"}, {"step": {"step": 3, "tool": "universal_milestone", "args": {"title": "RL Research", "description": "Found RL content across fleet", "kind": "achievement"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": ["Review found items in Calibre GUI"]}, "steps_executed": 3, "steps_succeeded": 3},
+    "description": "Full agentic workflow with comprehensive context and 3 steps"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Check what's running in the fleet right now.", "max_steps": 2, "context_depth": "basic"},
+    "returns": {"goal": "Check what's running in the fleet right now.", "correlation_id": "xyz789", "plan": {"steps": [{"step": 1, "tool": "get_fleet_telemetry", "args": {}, "rationale": "Check fleet health"}], "expected_outcome": "Fleet status with node details"}, "steps_taken": [{"step": {"step": 1, "tool": "get_fleet_telemetry", "args": {}}, "result": "{'fleet_status': 'Healthy', 'active_nodes': 3}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 1, "steps_succeeded": 1},
+    "description": "Basic context workflow with single telemetry step"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Research AI safety papers in Calibre, then check my knowledge notes on the same topic.", "max_steps": 5, "context_depth": "comprehensive"},
+    "returns": {"goal": "Research AI safety papers in Calibre, then check my knowledge notes on the same topic.", "correlation_id": "def456", "plan": {"steps": [{"step": 1, "tool": "search_federated", "args": {"query": "AI safety", "domain": "calibre"}, "rationale": "Find AI safety books"}, {"step": 2, "tool": "search_federated", "args": {"query": "AI safety alignment", "domain": "knowledge"}, "rationale": "Find related knowledge notes"}, {"step": 3, "tool": "universal_milestone", "args": {"title": "AI Safety Research", "description": "Searched Calibre + Knowledge for AI safety content", "kind": "achievement"}, "rationale": "Record research activity"}], "expected_outcome": "AI safety books list, knowledge notes list, milestone recorded"}, "steps_taken": [{"step": {"step": 1, "tool": "search_federated", "args": {"query": "AI safety", "domain": "calibre"}}, "result": "{'total_hits': 3}", "status": "success"}, {"step": {"step": 2, "tool": "search_federated", "args": {"query": "AI safety alignment", "domain": "knowledge"}}, "result": "{'total_hits': 5}", "status": "success"}, {"step": {"step": 3, "tool": "universal_milestone", "args": {"title": "AI Safety Research", "description": "Searched Calibre + Knowledge for AI safety content", "kind": "achievement"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": ["Read Superintelligence by Bostrom from Calibre"]}, "steps_executed": 3, "steps_succeeded": 3},
+    "description": "Multi-source research workflow with knowledge notes"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Run maintenance: clear RAG, re-ingest, check stats, log milestone.", "max_steps": 4, "context_depth": "comprehensive"},
+    "returns": {"goal": "Run maintenance: clear RAG, re-ingest, check stats, log milestone.", "correlation_id": "ghi789", "plan": {"steps": [{"step": 1, "tool": "rag_clear", "args": {}, "rationale": "Clear old index"}, {"step": 2, "tool": "ingest_fleet_to_rag", "args": {}, "rationale": "Re-ingest all sources"}, {"step": 3, "tool": "rag_stats", "args": {}, "rationale": "Verify index health"}, {"step": 4, "tool": "universal_milestone", "args": {"title": "RAG Maintenance", "description": "Cleared, re-ingested, verified", "kind": "achievement"}, "rationale": "Log completion"}], "expected_outcome": "RAG cleared, re-ingested, stats verified, milestone logged"}, "steps_taken": [{"step": {"step": 1, "tool": "rag_clear", "args": {}}, "result": "{'status': 'cleared'}", "status": "success"}, {"step": {"step": 2, "tool": "ingest_fleet_to_rag", "args": {}}, "result": "{'total_ingested': 1120}", "status": "success"}, {"step": {"step": 3, "tool": "rag_stats", "args": {}}, "result": "{'total_items': 1120}", "status": "success"}, {"step": {"step": 4, "tool": "universal_milestone", "args": {"title": "RAG Maintenance", "description": "Cleared, re-ingested, verified", "kind": "achievement"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 4, "steps_succeeded": 4},
+    "description": "Maintenance workflow: clear, ingest, verify, log"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Find all my sci-fi content across Calibre and Plex, then log it.", "max_steps": 3, "context_depth": "basic"},
+    "returns": {"goal": "Find all my sci-fi content across Calibre and Plex, then log it.", "correlation_id": "jkl012", "plan": {"steps": [{"step": 1, "tool": "search_federated", "args": {"query": "sci-fi", "domain": "calibre"}, "rationale": "Find sci-fi books"}, {"step": 2, "tool": "search_federated", "args": {"query": "sci-fi", "domain": "plex"}, "rationale": "Find sci-fi movies/shows"}], "expected_outcome": "Lists of sci-fi books and movies"}, "steps_taken": [{"step": {"step": 1, "tool": "search_federated", "args": {"query": "sci-fi", "domain": "calibre"}}, "result": "{'total_hits': 12}", "status": "success"}, {"step": {"step": 2, "tool": "search_federated", "args": {"query": "sci-fi", "domain": "plex"}}, "result": "{'total_hits': 8}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 2, "steps_succeeded": 2},
+    "description": "Sci-fi content search across Calibre and Plex"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "This is a very long and complex goal that will be truncated for testing purposes but should still be passed through to the planner correctly to see how it handles verbose input.", "max_steps": 10, "context_depth": "comprehensive"},
+    "returns": {"goal": "This is a very long and complex goal...", "correlation_id": "mno345", "plan": {"steps": [{"step": 1, "tool": "get_fleet_telemetry", "args": {}, "rationale": "Check system state before planning"}], "expected_outcome": "Initial health check"}, "steps_taken": [{"step": {"step": 1, "tool": "get_fleet_telemetry", "args": {}}, "result": "{'fleet_status': 'Healthy'}", "status": "success"}], "audit": {"achieved": true, "quality": "partial", "issues": ["Goal too broad for single workflow"], "next_steps": ["Break goal into smaller sub-tasks"]}, "steps_executed": 1, "steps_succeeded": 1},
+    "description": "Workflow with verbose goal — fallback to telemetry"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "", "max_steps": 3, "context_depth": "basic"},
+    "returns": {"goal": "", "correlation_id": "pqr678", "plan": {"steps": [{"step": 1, "tool": "get_fleet_telemetry", "args": {}, "rationale": "fallback health check"}], "expected_outcome": "Telemetry check"}, "steps_taken": [{"step": {"step": 1, "tool": "get_fleet_telemetry", "args": {}}, "result": "{'fleet_status': 'Healthy'}", "status": "success"}], "audit": {"achieved": true, "quality": "partial", "issues": ["Empty goal"], "next_steps": []}, "steps_executed": 1, "steps_succeeded": 1},
+    "description": "Empty goal workflow — fallback plan"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Count how many items are in the RAG index and log it as a milestone.", "max_steps": 3, "context_depth": "basic"},
+    "returns": {"goal": "Count how many items are in the RAG index and log it as a milestone.", "correlation_id": "stu901", "plan": {"steps": [{"step": 1, "tool": "rag_stats", "args": {}, "rationale": "Get index count"}, {"step": 2, "tool": "universal_milestone", "args": {"title": "RAG Item Count", "description": "RAG index contains X items across Y sources", "kind": "info"}, "rationale": "Log the count"}], "expected_outcome": "RAG count logged as milestone"}, "steps_taken": [{"step": {"step": 1, "tool": "rag_stats", "args": {}}, "result": "{'total_items': 1160}", "status": "success"}, {"step": {"step": 2, "tool": "universal_milestone", "args": {"title": "RAG Item Count", "description": "RAG index contains 1160 items across 5 sources", "kind": "info"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 2, "steps_succeeded": 2},
+    "description": "Count RAG items and log milestone"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Give me a comprehensive overview of the entire fleet — what servers are discovered, which are active, the RAG index health, and the host resources.", "max_steps": 5, "context_depth": "comprehensive"},
+    "returns": {"goal": "Give me a comprehensive overview of the entire fleet...", "correlation_id": "vwx234", "plan": {"steps": [{"step": 1, "tool": "glom_on", "args": {}, "rationale": "Discover all servers"}, {"step": 2, "tool": "get_fleet_telemetry", "args": {}, "rationale": "Get host metrics"}, {"step": 3, "tool": "rag_stats", "args": {}, "rationale": "Get RAG health"}, {"step": 4, "tool": "list_ollama_models", "args": {}, "rationale": "Check local LLM availability"}, {"step": 5, "tool": "universal_milestone", "args": {"title": "Fleet Overview", "description": "Full fleet audit completed", "kind": "info"}, "rationale": "Log the audit"}], "expected_outcome": "Complete fleet, RAG, host, and LLM overview"}, "steps_taken": [{"step": {"step": 1, "tool": "glom_on", "args": {}}, "result": "{'count': 15, 'active_count': 5}", "status": "success"}, {"step": {"step": 2, "tool": "get_fleet_telemetry", "args": {}}, "result": "{'fleet_status': 'Healthy'}", "status": "success"}, {"step": {"step": 3, "tool": "rag_stats", "args": {}}, "result": "{'total_items': 1160}", "status": "success"}, {"step": {"step": 4, "tool": "list_ollama_models", "args": {}}, "result": "['llama3:latest']", "status": "success"}, {"step": {"step": 5, "tool": "universal_milestone", "args": {"title": "Fleet Overview", "description": "Full fleet audit completed", "kind": "info"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": ["Consider adding more sub-servers to config.json"]}, "steps_executed": 5, "steps_succeeded": 5},
+    "description": "Comprehensive fleet overview — discover, telemetry, RAG, models, milestone"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Search for 'cooking' across all sources and log 10 results.", "max_steps": 2, "context_depth": "basic"},
+    "returns": {"goal": "Search for 'cooking' across all sources and log 10 results.", "correlation_id": "yzx567", "plan": {"steps": [{"step": 1, "tool": "search_federated", "args": {"query": "cooking", "domain": "all"}, "rationale": "Search all sources"}], "expected_outcome": "Cooking results from all fleet sources"}, "steps_taken": [{"step": {"step": 1, "tool": "search_federated", "args": {"query": "cooking", "domain": "all"}}, "result": "{'total_hits': 7}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 1, "steps_succeeded": 1},
+    "description": "Simple cross-fleet search via workflow"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Check if I have any content about astronomy in my Plex library and Immich photos.", "max_steps": 4, "context_depth": "basic"},
+    "returns": {"goal": "Check if I have any content about astronomy in my Plex library and Immich photos.", "correlation_id": "abc890", "plan": {"steps": [{"step": 1, "tool": "rag_semantic_search", "args": {"query": "astronomy space telescope", "limit": 5, "source": "plex"}, "rationale": "Search Plex via RAG"}, {"step": 2, "tool": "rag_semantic_search", "args": {"query": "astronomy stars moon", "limit": 5, "source": "immich"}, "rationale": "Search Immich via RAG"}], "expected_outcome": "Astronomy content from Plex and Immich"}, "steps_taken": [{"step": {"step": 1, "tool": "rag_semantic_search", "args": {"query": "astronomy space telescope", "limit": 5, "source": "plex"}}, "result": "{'result_count': 2}", "status": "success"}, {"step": {"step": 2, "tool": "rag_semantic_search", "args": {"query": "astronomy stars moon", "limit": 5, "source": "immich"}}, "result": "{'result_count': 4}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 2, "steps_succeeded": 2},
+    "description": "RAG-based astronomy search across Plex and Immich via workflow"
+  },
+  {
+    "tool": "universal_shutdown",
+    "params": {},
+    "returns": {"success": true, "message": "Server shutting down."},
+    "description": "Graceful server termination"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "search", "payload": {"query": "photography", "domain": "immich"}},
+    "returns": {"status": "success", "routing_key": "media.search", "results": {"immich": [{"title": "DSC_4521.jpg", "author": "2026-06-01", "source": "immich", "type": "photo", "id": "img_4521"}]}},
+    "description": "Search Immich via portmanteau media.search"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "search", "payload": {"query": "python tutorials", "domain": "docs"}},
+    "returns": {"status": "success", "routing_key": "media.search", "results": {"docsops": [{"title": "Python Tutorial", "author": "System", "source": "docsops", "type": "doc", "id": "python/tutorial.md"}]}},
+    "description": "Search Docs MCP via portmanteau media.search"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "search", "payload": {"query": "project alpha", "domain": "knowledge"}},
+    "returns": {"status": "success", "routing_key": "media.search", "results": {"knowledge": [{"title": "Project Alpha Notes", "author": "Memory", "source": "knowledge", "type": "note", "id": "proj-alpha-notes"}]}},
+    "description": "Search Knowledge notes via portmanteau media.search"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "media", "action": "rag_search", "payload": {"query": "cooking recipes", "limit": 5, "source": "calibre"}},
+    "returns": {"status": "success", "routing_key": "media.rag_search", "results": [{"id": "cook_101", "title": "Joy of Cooking", "author": "Rombauer", "source": "calibre", "type": "book", "_score": 0.12}], "result_count": 3},
+    "description": "RAG search for Calibre cookbooks via portmanteau"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "world war II", "domain": "all"},
+    "returns": {"query": "world war II", "domain": "all", "results": {"calibre": [{"title": "The Second World War", "author": "Antony Beevor", "source": "calibre", "type": "book", "id": "501"}], "plex": [{"title": "Band of Brothers", "author": "2001", "source": "plex", "type": "show", "id": "601"}, {"title": "Saving Private Ryan", "author": "1998", "source": "plex", "type": "movie", "id": "602"}], "immich": [], "docsops": [], "knowledge": [{"title": "WWII Research Notes", "author": "Memory", "source": "knowledge", "type": "note", "id": "wwii-notes"}]}, "total_hits": 4},
+    "description": "WWII search across all sources with multiple hits"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "machine learning", "domain": "knowledge"},
+    "returns": {"query": "machine learning", "domain": "knowledge", "results": {"knowledge": [{"title": "ML Fundamentals", "author": "Memory", "source": "knowledge", "type": "note", "id": "ml-fundamentals"}, {"title": "Transformer Notes", "author": "Memory", "source": "knowledge", "type": "note", "id": "transformer-notes"}, {"title": "Training Tips", "author": "Memory", "source": "knowledge", "type": "note", "id": "training-tips"}]}, "total_hits": 3},
+    "description": "Search only knowledge notes"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "no results expected xyzzy", "domain": "all"},
+    "returns": {"query": "no results expected xyzzy", "domain": "all", "results": {"calibre": [], "plex": [], "immich": [], "docsops": [], "knowledge": []}, "total_hits": 0},
+    "description": "Federated search with no matching results"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "gardening plants flowers", "limit": 3},
+    "returns": {"query": "gardening plants flowers", "source_filter": null, "results": [{"id": "gard_101", "title": "The Well-Tempered Garden", "author": "Christopher Lloyd", "source": "calibre", "type": "book", "_score": 0.25}], "result_count": 1, "index_size": 1160},
+    "description": "Semantic search for gardening books"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "javascript web development", "limit": 10},
+    "returns": {"query": "javascript web development", "source_filter": null, "results": [{"id": "web_101", "title": "JavaScript: The Good Parts", "author": "Douglas Crockford", "source": "calibre", "type": "book", "_score": 0.18}, {"id": "web_102", "title": "You Don't Know JS", "author": "Kyle Simpson", "source": "calibre", "type": "book", "_score": 0.22}, {"id": "doc_js", "title": "React Hooks Guide", "author": "System", "source": "docsops", "type": "doc", "_score": 0.31}], "result_count": 3, "index_size": 1160},
+    "description": "Cross-source semantic search for web dev resources"
+  },
+  {
+    "tool": "rag_semantic_search",
+    "params": {"query": "photo", "limit": 5, "source": "immich"},
+    "returns": {"query": "photo", "source_filter": "immich", "results": [{"id": "img_001", "title": "Vacation_Beach.jpg", "author": "2026-03-15", "source": "immich", "type": "photo", "_score": 0.4}, {"id": "img_002", "title": "Birthday_Party.jpg", "author": "2026-04-20", "source": "immich", "type": "photo", "_score": 0.45}], "result_count": 2, "index_size": 1160},
+    "description": "Immich photo search"
+  },
+  {
+    "tool": "ingest_fleet_to_rag",
+    "params": {},
+    "returns": {"ingested_per_source": {"calibre": 500, "plex": 0, "immich": 0, "docsops": 120, "knowledge": 80}, "total_ingested": 700, "rag_stats": {"initialized": true, "total_items": 700, "embedding_model": "hash-fallback", "source_distribution": {"calibre": 500, "docsops": 120, "knowledge": 80}}},
+    "description": "Partial RAG ingest with some sources offline"
+  },
+  {
+    "tool": "ingest_fleet_to_rag",
+    "params": {},
+    "returns": {"ingested_per_source": {"calibre": 500, "plex": 350, "immich": 200, "docsops": 150, "knowledge": 100}, "total_ingested": 1300, "rag_stats": {"initialized": true, "total_items": 2430, "embedding_model": "all-MiniLM-L6-v2", "source_distribution": {"calibre": 950, "plex": 670, "immich": 380, "docsops": 270, "knowledge": 190}}},
+    "description": "Second RAG ingest adding to existing index (cumulative)"
+  },
+  {
+    "tool": "rag_stats",
+    "params": {},
+    "returns": {"initialized": true, "total_items": 2430, "embedding_model": "all-MiniLM-L6-v2", "db_path": "D:\\Dev\\repos\\universal-actuator-mcp\\backend\\state\\lancedb", "source_distribution": {"calibre": 950, "plex": 670, "immich": 380, "docsops": 270, "knowledge": 190}},
+    "description": "RAG stats after multiple ingest cycles"
+  },
+  {
+    "tool": "glom_on",
+    "params": {},
+    "returns": {"discovered_servers": [{"name": "calibre", "source": "C:/Users/sandr/AppData/Roaming/Claude/claude_desktop_config.json", "command": "python -m calibre_mcp.server", "active": true, "port": 10720}, {"name": "plex", "source": "C:/Users/sandr/AppData/Roaming/Claude/claude_desktop_config.json", "command": "python -m plex_mcp.server", "active": false}, {"name": "browser", "source": "C:/Users/sandr/AppData/Roaming/Claude/claude_desktop_config.json", "command": "npx -y @modelcontextprotocol/server-playwright", "active": false}], "count": 3, "active_count": 1, "active_ports": [10720]},
+    "description": "Partial discovery with some servers inactive"
+  },
+  {
+    "tool": "get_fleet_telemetry",
+    "params": {},
+    "returns": {"fleet_status": "Healthy", "active_nodes": 2, "total_discovered": 5, "host_metrics": {"cpu_percent": 45.0, "memory_percent": 72.0, "available_gb": 8.5}, "node_details": [{"name": "calibre", "port": 10720, "status": "online"}, {"name": "knowledge", "port": 10732, "status": "online"}], "telemetry_timestamp": "2026-07-14T12:00:00"},
+    "description": "Moderate-load telemetry with 2 active nodes"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Test Milestone", "description": "Testing milestone system", "kind": "info"},
+    "returns": {"status": "recorded", "milestone": {"title": "Test Milestone", "description": "Testing milestone system", "type": "info", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Basic info milestone for system testing"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "Database Migration", "description": "Migrated LanceDB to new storage path", "kind": "warning"},
+    "returns": {"status": "recorded", "milestone": {"title": "Database Migration", "description": "Migrated LanceDB to new storage path", "type": "warning", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Warning milestone for infrastructure changes"
+  },
+  {
+    "tool": "universal_milestone",
+    "params": {"title": "5000th Item Indexed", "description": "RAG index reached 5000 total items across all sources", "kind": "achievement"},
+    "returns": {"status": "recorded", "milestone": {"title": "5000th Item Indexed", "description": "RAG index reached 5000 total items across all sources", "type": "achievement", "timestamp": "2026-07-14T12:00:00"}},
+    "description": "Achievement milestone for index growth milestone"
+  },
+  {
+    "tool": "get_milestones_history",
+    "params": {},
+    "returns": {"milestones": [{"title": "Server Started", "description": "v2.1.0 initialised", "type": "info", "timestamp": "2026-07-01T10:00:00"}, {"title": "RAG Index Populated", "description": "Ingested 1160 items", "type": "achievement", "timestamp": "2026-07-01T10:05:00"}, {"title": "Database Migration", "description": "Migrated LanceDB", "type": "warning", "timestamp": "2026-07-07T09:00:00"}, {"title": "5000th Item Indexed", "description": "RAG index reached 5000", "type": "achievement", "timestamp": "2026-07-14T10:00:00"}], "count": 4},
+    "description": "Full milestone history with mixed types"
+  },
+  {
+    "tool": "list_ollama_models",
+    "params": {},
+    "returns": ["llama3:latest", "llama3:70b", "mistral:latest", "mixtral:8x7b", "codellama:7b", "codellama:34b", "phi3:mini", "phi3:medium", "nomic-embed-text:latest"],
+    "description": "Ollama with both chat and embedding models"
+  },
+  {
+    "tool": "list_ollama_models",
+    "params": {},
+    "returns": [],
+    "description": "Ollama running but with no models installed"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Search my docs for MCP server setup guides and log them.", "max_steps": 3, "context_depth": "basic"},
+    "returns": {"goal": "Search my docs for MCP server setup guides and log them.", "correlation_id": "bcd123", "plan": {"steps": [{"step": 1, "tool": "search_federated", "args": {"query": "MCP server setup guide", "domain": "docs"}, "rationale": "Find setup docs"}, {"step": 2, "tool": "universal_milestone", "args": {"title": "MCP Docs Found", "description": "Searched docs MCP for setup guides", "kind": "info"}, "rationale": "Log findings"}], "expected_outcome": "List of MCP setup docs and milestone logged"}, "steps_taken": [{"step": {"step": 1, "tool": "search_federated", "args": {"query": "MCP server setup guide", "domain": "docs"}}, "result": "{'total_hits': 3}", "status": "success"}, {"step": {"step": 2, "tool": "universal_milestone", "args": {"title": "MCP Docs Found", "description": "Searched docs MCP for setup guides", "kind": "info"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": ["Read the setup guides found in docs"]}, "steps_executed": 2, "steps_succeeded": 2},
+    "description": "Docs search and milestone logging workflow"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Check all available Ollama models and log them as a milestone for reference.", "max_steps": 3, "context_depth": "basic"},
+    "returns": {"goal": "Check all available Ollama models and log them as a milestone for reference.", "correlation_id": "cde234", "plan": {"steps": [{"step": 1, "tool": "list_ollama_models", "args": {}, "rationale": "Get available models"}, {"step": 2, "tool": "universal_milestone", "args": {"title": "Ollama Models Available", "description": "Available models: X, Y, Z", "kind": "info"}, "rationale": "Log models for reference"}], "expected_outcome": "Ollama model list logged as milestone"}, "steps_taken": [{"step": {"step": 1, "tool": "list_ollama_models", "args": {}}, "result": "['llama3:latest', 'mistral:latest']", "status": "success"}, {"step": {"step": 2, "tool": "universal_milestone", "args": {"title": "Ollama Models Available", "description": "Available models: llama3:latest, mistral:latest", "kind": "info"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 2, "steps_succeeded": 2},
+    "description": "List Ollama models and log milestone workflow"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Find all photography-related content: search Calibre for photography books, search Plex for photography documentaries, search Immich for photos tagged photography, log everything.", "max_steps": 5, "context_depth": "comprehensive"},
+    "returns": {"goal": "Find all photography-related content...", "correlation_id": "def345", "plan": {"steps": [{"step": 1, "tool": "search_federated", "args": {"query": "photography", "domain": "calibre"}, "rationale": "Find photography books"}, {"step": 2, "tool": "search_federated", "args": {"query": "photography documentary", "domain": "plex"}, "rationale": "Find photography docs"}, {"step": 3, "tool": "rag_semantic_search", "args": {"query": "photography", "source": "immich"}, "rationale": "Search Immich photos"}, {"step": 4, "tool": "universal_milestone", "args": {"title": "Photography Survey", "description": "Found X books, Y docs, Z photos", "kind": "achievement"}, "rationale": "Log full survey"}], "expected_outcome": "Complete photography content inventory across fleet"}, "steps_taken": [{"step": {"step": 1, "tool": "search_federated", "args": {"query": "photography", "domain": "calibre"}}, "result": "{'total_hits': 5}", "status": "success"}, {"step": {"step": 2, "tool": "search_federated", "args": {"query": "photography documentary", "domain": "plex"}}, "result": "{'total_hits': 2}", "status": "success"}, {"step": {"step": 3, "tool": "rag_semantic_search", "args": {"query": "photography", "source": "immich"}}, "result": "{'result_count': 12}", "status": "success"}, {"step": {"step": 4, "tool": "universal_milestone", "args": {"title": "Photography Survey", "description": "Found 5 books, 2 docs, 12 photos", "kind": "achievement"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": ["Review photography books in Calibre"]}, "steps_executed": 4, "steps_succeeded": 4},
+    "description": "Multi-source photography inventory across 3 fleet nodes"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Complete system audit: discovery, telemetry, RAG stats, models, and milestone all in one pass.", "max_steps": 6, "context_depth": "comprehensive"},
+    "returns": {"goal": "Complete system audit: discovery, telemetry, RAG stats, models, and milestone all in one pass.", "correlation_id": "efg456", "plan": {"steps": [{"step": 1, "tool": "glom_on", "args": {}, "rationale": "Server discovery"}, {"step": 2, "tool": "get_fleet_telemetry", "args": {}, "rationale": "Host telemetry"}, {"step": 3, "tool": "rag_stats", "args": {}, "rationale": "RAG health"}, {"step": 4, "tool": "list_ollama_models", "args": {}, "rationale": "LLM availability"}, {"step": 5, "tool": "universal_milestone", "args": {"title": "System Audit", "description": "Full system audit completed", "kind": "achievement"}, "rationale": "Log completion"}], "expected_outcome": "Complete system state snapshot"}, "steps_taken": [{"step": {"step": 1, "tool": "glom_on", "args": {}}, "result": "{'count': 15}", "status": "success"}, {"step": {"step": 2, "tool": "get_fleet_telemetry", "args": {}}, "result": "{'fleet_status': 'Healthy'}", "status": "success"}, {"step": {"step": 3, "tool": "rag_stats", "args": {}}, "result": "{'total_items': 1160}", "status": "success"}, {"step": {"step": 4, "tool": "list_ollama_models", "args": {}}, "result": "['llama3:latest']", "status": "success"}, {"step": {"step": 5, "tool": "universal_milestone", "args": {"title": "System Audit", "description": "Full system audit completed", "kind": "achievement"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 5, "steps_succeeded": 5},
+    "description": "Complete system audit workflow across all diagnostic tools"
+  },
+  {
+    "tool": "agentic_workflow_tool",
+    "params": {"goal": "Ingest everything into RAG and then search for 'artificial intelligence' to confirm it worked.", "max_steps": 4, "context_depth": "comprehensive"},
+    "returns": {"goal": "Ingest everything into RAG and then search for 'artificial intelligence' to confirm it worked.", "correlation_id": "fgh567", "plan": {"steps": [{"step": 1, "tool": "rag_clear", "args": {}, "rationale": "Clear old index"}, {"step": 2, "tool": "ingest_fleet_to_rag", "args": {}, "rationale": "Fresh ingest"}, {"step": 3, "tool": "rag_semantic_search", "args": {"query": "artificial intelligence", "limit": 5}, "rationale": "Verify search works"}, {"step": 4, "tool": "universal_milestone", "args": {"title": "AI RAG Rebuild", "description": "Fresh ingest + AI search verified", "kind": "achievement"}, "rationale": "Log rebuild"}], "expected_outcome": "RAG rebuilt and search returning results"}, "steps_taken": [{"step": {"step": 1, "tool": "rag_clear", "args": {}}, "result": "{'status': 'cleared'}", "status": "success"}, {"step": {"step": 2, "tool": "ingest_fleet_to_rag", "args": {}}, "result": "{'total_ingested': 1160}", "status": "success"}, {"step": {"step": 3, "tool": "rag_semantic_search", "args": {"query": "artificial intelligence", "limit": 5}}, "result": "{'result_count': 5}", "status": "success"}, {"step": {"step": 4, "tool": "universal_milestone", "args": {"title": "AI RAG Rebuild", "description": "Fresh ingest + AI search verified", "kind": "achievement"}}, "result": "{'status': 'recorded'}", "status": "success"}], "audit": {"achieved": true, "quality": "good", "issues": [], "next_steps": []}, "steps_executed": 4, "steps_succeeded": 4},
+    "description": "RAG rebuild cycle with verification search"
+  },
+  {
+    "tool": "search_federated",
+    "params": {"query": "my knowledge base", "domain": "knowledge"},
+    "returns": {"query": "my knowledge base", "domain": "knowledge", "results": {"knowledge": [{"title": "Project Notes", "author": "Memory", "source": "knowledge", "type": "note", "id": "proj-notes", "metadata": {"tags": ["research"], "project": "fleet"}}, {"title": "Architecture Decisions", "author": "Memory", "source": "knowledge", "type": "note", "id": "arch-decisions"}]}, "total_hits": 2},
+    "description": "Search knowledge notes via domain=knowledge"
+  },
+  {
+    "tool": "get_milestones_history",
+    "params": {},
+    "returns": {"milestones": [{"title": "Server Started", "description": "Hub v2.1.0 initialised", "type": "info", "timestamp": "2026-07-14T10:00:00"}], "count": 1},
+    "description": "Milestone history with single entry"
+  },
+  {
+    "tool": "universal_actuator",
+    "params": {"domain": "system", "action": "telemetry", "payload": {}},
+    "returns": {"status": "success", "routing_key": "system.telemetry", "fleet_status": "Standalone", "active_nodes": 0, "host_metrics": {"cpu_percent": 5.0, "memory_percent": 30.0, "available_gb": 40.0}},
+    "description": "Portmanteau telemetry on a low-utilisation system"
+  }
+]

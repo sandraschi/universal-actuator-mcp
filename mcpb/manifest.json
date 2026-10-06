@@ -1,0 +1,23 @@
+{
+  "manifest_version": "0.2",
+  "name": "universal-actuator-mcp",
+  "version": "2.0.0",
+  "description": "Fleet-wide Federation Gateway (Robotics, Media, Infrastructure, Knowledge)",
+  "author": { "name": "sandraschi" },
+  "server": {
+    "type": "python",
+    "entry_point": "src/universal_actuator_mcp/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run","--directory","${PWD}","python","-m","universal_actuator_mcp"],
+      "env": {
+        "PYTHONPATH": "${PWD}/src",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  },
+  "tools": [
+    { "name": "universal_actuator", "description": "universal_actuator" },
+    { "name": "search_library", "description": "search_library" }
+  ]
+}
