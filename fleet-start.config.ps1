@@ -5,10 +5,12 @@
     BackendPort  = 10929
     FrontendPort = 10982
     HealthPath   = '/health'
-    WebRoot      = 'D:\Dev\repos\universal-actuator-mcp\webapp'
+    WebRoot      = 'webapp'
     Backend = @{
         Kind          = 'uvicorn'
         UvicornTarget = 'universal_actuator_mcp.server:app'
+        SyncExtras    = @('dev')
+        SyncOnStart  = $true
         Env           = @{ WEB_PORT = '10929' }
     }
     Frontend = @{
@@ -18,4 +20,3 @@
         ApiTargetEnv   = 'VITE_API_TARGET'
     }
 }
-
