@@ -1,4 +1,4 @@
-﻿use std::fs::{self, OpenOptions};
+use std::fs::{self, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
@@ -13,7 +13,10 @@ pub struct BackendProcess(pub Mutex<Option<Child>>);
 
 // -- PER-REPO: Customize these constants --
 const BACKEND_NAME: &str = "universal-actuator-mcp-backend.exe";
-const BACKEND_PORT: u16 = 10982;
+// Operator backend port (claimed as universal-actuator-mcp-native). Never 10982 (dev dashboard)
+// or 10929 (dev backend): the installed app and `start.ps1` must run side by side. Keep in sync
+// with native/build.ps1 (VITE_API_BASE).
+const BACKEND_PORT: u16 = 11248;
 const BACKEND_TAG: &str = "universal-actuator-mcp-backend-x86_64-pc-windows-msvc.exe";
 const ENV_PORT: &str = "UNIVERSAL_ACTUATOR_MCP_PORT";
 const ENV_HOST: &str = "UNIVERSAL_ACTUATOR_MCP_HOST";
@@ -92,7 +95,10 @@ pub fn materialize_backend(app: &AppHandle) -> Result<PathBuf, String> {
 
     let bundled = resolve_bundled_backend(app)?;
     log_line(app, &format!("using bundled backend: {}", bundled.display()));
-    Ok(bundled)
+    // Strip Windows extended-length prefix
+    let s = bundled.to_string_lossy().to_string();
+    let clean = s.strip_prefix("\\\\?\\").map(PathBuf::from).unwrap_or(bundled.clone());
+    Ok(clean)
 }
 
 fn free_port(port: u16) {
