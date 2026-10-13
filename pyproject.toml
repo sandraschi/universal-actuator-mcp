@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "universal-actuator-mcp"
-version = "2.1.1"
+version = "2.2.0"
 description = "Fleet-wide Federation Gateway (Robotics, Media, Infrastructure, Knowledge)"
 readme = "README.md"
 requires-python = ">=3.12"

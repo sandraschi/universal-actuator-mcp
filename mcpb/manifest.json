@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "universal-actuator-mcp",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Fleet-wide Federation Gateway (Robotics, Media, Infrastructure, Knowledge)",
   "author": { "name": "sandraschi" },
   "server": {
@@ -26,6 +26,8 @@
     { "name": "get_fleet_telemetry", "description": "Host + fleet telemetry" },
     { "name": "universal_milestone", "description": "Record a milestone" },
     { "name": "agentic_workflow_tool", "description": "SEP-1577 plan-execute-audit" },
-    { "name": "universal_shutdown", "description": "Graceful termination" }
+    { "name": "universal_shutdown", "description": "Graceful termination" },
+    { "name": "show_fleet_status_card", "description": "Prefab fleet health card" },
+    { "name": "show_rag_stats_card", "description": "Prefab RAG index card" }
   ]
 }
