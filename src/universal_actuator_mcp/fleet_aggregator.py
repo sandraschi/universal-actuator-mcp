@@ -192,8 +192,8 @@ class FleetAggregator:
                 # Handle direct response if it's already a dict/list (mocked servers)
                 if isinstance(res, (list, dict)):
                     data = res
-                elif hasattr(res, "dict"):  # Pydantic fallback
-                    data = res.dict()
+                elif hasattr(res, "model_dump"):  # Pydantic v2
+                    data = res.model_dump()
                 else:
                     data = []
 

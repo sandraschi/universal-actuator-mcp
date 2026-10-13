@@ -5,3 +5,16 @@ repos:
       - id: ruff
         args: [ --fix ]
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: biome-webapp
+        name: biome (webapp)
+        entry: scripts/pre-commit-biome.ps1
+        language: script
+        files: ^webapp/
+        pass_filenames: false
+      - id: no-bak
+        name: no timestamped .bak files
+        entry: powershell.exe -NoProfile -File scripts/pre-commit-no-bak.ps1
+        language: system
+        always_run: false

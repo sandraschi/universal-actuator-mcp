@@ -14,14 +14,15 @@ import time
 from collections import deque
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 from uuid import uuid4
 
 import aiohttp
 import psutil
 from fastapi.middleware.cors import CORSMiddleware
 from fastmcp import Context, FastMCP
-from starlette.responses import JSONResponse
+from pydantic import Field
+from starlette.responses import JSONResponse, StreamingResponse
 
 # Standard relative imports within the package
 from .fleet import FleetManager
@@ -29,6 +30,11 @@ from .rag import LanceDBRag
 
 logger = logging.getLogger("UnivActHub")
 logging.basicConfig(level=logging.INFO)
+
+
+def _cid(ctx: Context) -> str:
+    """Correlation id for log lines (runtime attr on FastMCP Context, absent from 3.x stubs)."""
+    return str(getattr(ctx, "correlation_id", "-"))
 
 
 class ActivityLog:
@@ -66,7 +72,7 @@ class ActivityLog:
                 at = float(after_id.split(".")[0])
                 entries = [e for e in entries if float(e["id"].split(".")[0]) > at]
             except Exception:
-                pass
+                logger.debug("ActivityLog.query: unparsable after_id %r, ignoring filter", after_id)
         if level:
             lo = {"DEBUG": 0, "INFO": 1, "WARNING": 2, "ERROR": 3}
             ml = lo.get(level.upper(), 1)
@@ -113,11 +119,11 @@ _fleet: FleetManager | None = None
 # Initialize FastMCP 3.2 (Reductionist Standard)
 mcp = FastMCP(
     "Universal Actuator Hub",
-    version="2.1.0",
+    version="2.1.1",
 )
 
 
-@mcp.lifespan()
+@mcp.lifespan()  # pyright: ignore[reportArgumentType] - FastMCP 3.x lifespan stub quirk, runtime OK
 async def lifespan(server: FastMCP):
     global _fleet
     logger.info("Universal Actuator Federation Gateway starting (FastMCP 3.2)...")
@@ -219,7 +225,7 @@ async def _get_ollama_models_internal() -> list[str]:
     url = "http://127.0.0.1:11434/api/tags"
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=2.0) as response:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=2.0)) as response:
                 if response.status == 200:
                     data = await response.json()
                     # Unified extraction: supports both old and new Ollama API schemas
@@ -353,9 +359,9 @@ async def _dispatch_tool(tool_name: str, args: dict[str, Any]) -> Any:
 
 @mcp.tool()
 async def universal_actuator(
-    domain: str,
-    action: str,
-    payload: dict[str, Any],
+    domain: Annotated[str, Field(description='Target domain: "files", "media", "robotics" or "system".')],
+    action: Annotated[str, Field(description="Action within the domain, e.g. search, ingest, telemetry.")],
+    payload: Annotated[dict[str, Any], Field(description="Action parameters, e.g. {query: ...}.")],
     ctx: Context,
 ) -> dict[str, Any]:
     """
@@ -364,12 +370,14 @@ async def universal_actuator(
     Reduces semantic overhead for agents by providing a unified protocol for
     files, media, robotics, and system operations.
 
-    Args:
-        domain: Target domain ("files", "media", "robotics", "system").
-        action: Specific action within the domain.
-        payload: Parameter object for the action.
+    ## Return Format
+    {"status": str, "message": str, "routing_key": str} plus domain payload keys.
+
+    ## Examples
+    - universal_actuator(domain="media", action="search", payload={"query": "dune"})
+    - universal_actuator(domain="system", action="telemetry", payload={})
     """
-    await ctx.info(f"[{ctx.correlation_id}] universal_actuator: domain={domain} action={action}")
+    await ctx.info(f"[{_cid(ctx)}] universal_actuator: domain={domain} action={action}")
 
     # Internal routing logic (Reductionist approach)
     if domain == "media":
@@ -378,7 +386,8 @@ async def universal_actuator(
         if action == "ingest":
             return await _ingest_fleet_to_rag_internal()
         if action == "rag_search":
-            return await _rag.semantic_search(payload.get("query", ""), payload.get("limit", 10), payload.get("source"))
+            hits = await _rag.semantic_search(payload.get("query", ""), payload.get("limit", 10), payload.get("source"))
+            return {"status": "success", "results": hits, "result_count": len(hits)}
 
     if domain == "system":
         if action == "telemetry":
@@ -386,7 +395,8 @@ async def universal_actuator(
         if action == "discover":
             return await _glom_on_internal()
         if action == "models":
-            return await _get_ollama_models_internal()
+            models = await _get_ollama_models_internal()
+            return {"status": "success", "models": models, "count": len(models)}
 
     return {
         "status": "partial_success",
@@ -401,8 +411,14 @@ async def universal_status(ctx: Context) -> dict[str, Any]:
     PORTMANTEAU PATTERN RATIONALE:
     Aggregates lifecycle telemetry and discovery data into a single industrial health dashboard.
     Enables rapid diagnosis of federated node connectivity and host resource utilization.
+
+    ## Return Format
+    {"fleet": dict, "rag": dict, "system": {"version": str, "mcp_version": str, "timestamp": str}}.
+
+    ## Examples
+    - universal_status()
     """
-    await ctx.info(f"[{ctx.correlation_id}] universal_status: initiating deep health check")
+    await ctx.info(f"[{_cid(ctx)}] universal_status: initiating deep health check")
     telemetry = await _get_fleet_telemetry_internal()
     rag_info = await _rag.stats()
 
@@ -419,38 +435,47 @@ async def universal_status(ctx: Context) -> dict[str, Any]:
 
 
 @mcp.tool()
-async def search_federated(query: str, ctx: Context, domain: str = "all") -> dict[str, Any]:
+async def search_federated(
+    query: Annotated[str, Field(description="Search query string.")],
+    ctx: Context,
+    domain: Annotated[str, Field(description='"plex", "calibre", "immich", "docs", "knowledge" or "all".')] = "all",
+) -> dict[str, Any]:
     """
     Unified search across Plex, Calibre, and Immich via their MCP servers.
 
-    Args:
-        query: Search query string.
-        domain: "plex", "calibre", "immich", or "all". Default: "all".
+    ## Return Format
+    {"query": str, "domain": str, "results": {source: [...]}, "total_hits": int, "timestamp": str}.
 
-    Returns:
-        dict with results per source and total_hits.
+    ## Examples
+    - search_federated(query="dune")
+    - search_federated(query="asimov", domain="calibre")
     """
-    await ctx.info(f"[{ctx.correlation_id}] search_federated query={query!r} domain={domain}")
+    await ctx.info(f"[{_cid(ctx)}] search_federated query={query!r} domain={domain}")
     return await _search_federated_internal(query, domain)
 
 
 @mcp.tool()
-async def rag_semantic_search(query: str, ctx: Context, limit: int = 10, source: str | None = None) -> dict[str, Any]:
+async def rag_semantic_search(
+    query: Annotated[str, Field(description="Natural language query.")],
+    ctx: Context,
+    limit: Annotated[int, Field(description="Max results.", ge=1, le=100)] = 10,
+    source: Annotated[str | None, Field(description='Optional filter: "calibre", "plex" or "immich".')] = None,
+) -> dict[str, Any]:
     """
     Semantic vector search over the LanceDB media index.
 
     Call ingest_fleet_to_rag() first to populate. Uses sentence-transformers
     (all-MiniLM-L6-v2) or hash fallback.
 
-    Args:
-        query: Natural language query.
-        limit: Max results. Default: 10.
-        source: Optional filter - "calibre", "plex", or "immich".
+    ## Return Format
+    {"query": str, "source_filter": str | None, "results": [...], "result_count": int,
+     "index_size": int, "embedding_model": str} - ranked, lower _score = more similar.
 
-    Returns:
-        Ranked results with _score (lower = more similar).
+    ## Examples
+    - rag_semantic_search(query="space opera")
+    - rag_semantic_search(query="asimov", limit=5, source="calibre")
     """
-    await ctx.info(f"[{ctx.correlation_id}] rag_semantic_search query={query!r} limit={limit} source={source}")
+    await ctx.info(f"[{_cid(ctx)}] rag_semantic_search query={query!r} limit={limit} source={source}")
     results = await _rag.semantic_search(query, limit, source)
     stats = await _rag.stats()
     return {
@@ -471,26 +496,46 @@ async def ingest_fleet_to_rag(ctx: Context) -> dict[str, Any]:
     Fetches up to 500 items per source. Safe to call repeatedly - existing items
     are overwritten by id.
 
-    Returns:
-        ingested_per_source, total_ingested, rag_stats.
+    ## Return Format
+    {"ingested_per_source": {source: int}, "total_ingested": int, "rag_stats": dict,
+     "timestamp": str}.
+
+    ## Examples
+    - ingest_fleet_to_rag()
     """
-    await ctx.info(f"[{ctx.correlation_id}] ingest_fleet_to_rag: starting bulk ingest...")
+    await ctx.info(f"[{_cid(ctx)}] ingest_fleet_to_rag: starting bulk ingest...")
     result = await _ingest_fleet_to_rag_internal()
-    await ctx.info(f"[{ctx.correlation_id}] ingest_fleet_to_rag: {result['total_ingested']} items total.")
+    await ctx.info(f"[{_cid(ctx)}] ingest_fleet_to_rag: {result['total_ingested']} items total.")
     return result
 
 
 @mcp.tool()
 async def rag_stats(ctx: Context) -> dict[str, Any]:
-    """Return LanceDB RAG index statistics: total_items, embedding_model, source_distribution."""
-    await ctx.info(f"[{ctx.correlation_id}] rag_stats")
+    """
+    LanceDB RAG index statistics: total_items, embedding_model, source_distribution.
+
+    ## Return Format
+    {"total_items": int, "embedding_model": str, ...}.
+
+    ## Examples
+    - rag_stats()
+    """
+    await ctx.info(f"[{_cid(ctx)}] rag_stats")
     return await _rag.stats()
 
 
 @mcp.tool()
 async def rag_clear(ctx: Context) -> dict[str, Any]:
-    """Clear the LanceDB RAG index entirely. Use before a fresh ingest."""
-    await ctx.warning(f"[{ctx.correlation_id}] rag_clear: dropping index")
+    """
+    Clear the LanceDB RAG index entirely. Use before a fresh ingest.
+
+    ## Return Format
+    {"status": "cleared", "timestamp": str}.
+
+    ## Examples
+    - rag_clear()
+    """
+    await ctx.warning(f"[{_cid(ctx)}] rag_clear: dropping index")
     await _rag.clear()
     return {"status": "cleared", "timestamp": datetime.now().isoformat()}
 
@@ -500,12 +545,15 @@ async def glom_on(ctx: Context) -> dict[str, Any]:
     """
     Auto-discovery: scan MCP config files and port range 10700-10900 for active services.
 
-    Returns:
-        discovered_servers list, count, active_count, active_ports.
+    ## Return Format
+    {"discovered_servers": [...], "count": int, "active_count": int, "active_ports": [...]}.
+
+    ## Examples
+    - glom_on()
     """
-    await ctx.info(f"[{ctx.correlation_id}] glom_on: scanning configs + ports 10700-10900...")
+    await ctx.info(f"[{_cid(ctx)}] glom_on: scanning configs + ports 10700-10900...")
     result = await _glom_on_internal()
-    await ctx.info(f"[{ctx.correlation_id}] glom_on: {result['count']} discovered, {result['active_count']} active.")
+    await ctx.info(f"[{_cid(ctx)}] glom_on: {result['count']} discovered, {result['active_count']} active.")
     return result
 
 
@@ -514,48 +562,74 @@ async def get_fleet_telemetry(ctx: Context) -> dict[str, Any]:
     """
     Real-time host health + fleet node count (CPU, RAM, active services).
 
-    Returns:
-        fleet_status, host_metrics, active_nodes, nodes list.
+    ## Return Format
+    {"fleet_status": str, "host_metrics": {...}, "active_nodes": int, "node_details": [...],
+     "telemetry_timestamp": str}.
+
+    ## Examples
+    - get_fleet_telemetry()
     """
-    await ctx.info(f"[{ctx.correlation_id}] get_fleet_telemetry")
+    await ctx.info(f"[{_cid(ctx)}] get_fleet_telemetry")
     return await _get_fleet_telemetry_internal()
 
 
 @mcp.tool()
-async def universal_milestone(title: str, description: str, ctx: Context, kind: str = "info") -> dict[str, Any]:
+async def universal_milestone(
+    title: Annotated[str, Field(description="Milestone title.")],
+    description: Annotated[str, Field(description="What was accomplished.")],
+    ctx: Context,
+    kind: Annotated[str, Field(description='"info", "warning" or "achievement".')] = "info",
+) -> dict[str, Any]:
     """
     Log a persistent milestone to the state file.
 
-    Args:
-        title: Milestone title.
-        description: Description.
-        kind: "info", "warning", or "achievement". Default: "info".
+    ## Return Format
+    {"status": "recorded", "milestone": {...}}.
+
+    ## Examples
+    - universal_milestone(title="RAG ingest done", description="500 items", kind="achievement")
     """
-    await ctx.info(f"[{ctx.correlation_id}] milestone: {title}")
+    await ctx.info(f"[{_cid(ctx)}] milestone: {title}")
     return {"status": "recorded", "milestone": _save_milestone_internal(title, description, kind)}
 
 
 @mcp.tool()
 async def get_milestones_history(ctx: Context) -> dict[str, Any]:
-    """Retrieve all recorded milestones."""
-    await ctx.info(f"[{ctx.correlation_id}] get_milestones_history")
+    """
+    Retrieve all recorded milestones.
+
+    ## Return Format
+    {"milestones": [...], "count": int}.
+
+    ## Examples
+    - get_milestones_history()
+    """
+    await ctx.info(f"[{_cid(ctx)}] get_milestones_history")
     milestones = _load_milestones()
     return {"milestones": milestones, "count": len(milestones)}
 
 
 @mcp.tool()
 async def list_ollama_models(ctx: Context) -> list[str]:
-    """Elicit available LLM models from the local Ollama instance (no hardcoding)."""
-    await ctx.info(f"[{ctx.correlation_id}] list_ollama_models: querying Ollama API...")
+    """
+    Elicit available LLM models from the local Ollama instance (no hardcoding).
+
+    ## Return Format
+    ["model:tag", ...] - live from Ollama, SOTA fallbacks when unreachable.
+
+    ## Examples
+    - list_ollama_models()
+    """
+    await ctx.info(f"[{_cid(ctx)}] list_ollama_models: querying Ollama API...")
     return await _get_ollama_models_internal()
 
 
 @mcp.tool()
 async def agentic_workflow_tool(
-    goal: str,
+    goal: Annotated[str, Field(description="Natural language description of what to accomplish.")],
     ctx: Context,
-    max_steps: int = 5,
-    context_depth: str = "comprehensive",
+    max_steps: Annotated[int, Field(description="Maximum execution steps.", ge=1, le=20)] = 5,
+    context_depth: Annotated[str, Field(description='"basic" or "comprehensive".')] = "comprehensive",
 ) -> dict[str, Any]:
     """
     [SEP-1577] Autonomous 3-phase workflow: Plan → Execute → Audit via ctx.sample().
@@ -564,15 +638,14 @@ async def agentic_workflow_tool(
     glom_on, get_fleet_telemetry, rag_stats, rag_clear, universal_milestone,
     get_milestones_history.
 
-    Args:
-        goal: Natural language description of what to accomplish.
-        max_steps: Maximum execution steps. Default: 5.
-        context_depth: "basic" or "comprehensive". Default: "comprehensive".
+    ## Return Format
+    {"goal": str, "correlation_id": str, "plan": dict, "steps_taken": [...], "audit": dict,
+     "steps_executed": int, "steps_succeeded": int, "timestamp": str}.
 
-    Returns:
-        goal, correlation_id, plan, steps_taken, audit, timestamp.
+    ## Examples
+    - agentic_workflow_tool(goal="Summarise fleet health and record a milestone")
     """
-    cid = ctx.correlation_id
+    cid = _cid(ctx)
     await ctx.info(f"[{cid}] agentic_workflow_tool: goal={goal!r}")
 
     # Phase 1 - Build context
@@ -613,7 +686,7 @@ Return ONLY valid JSON, no markdown fences:
     try:
         raw = await ctx.sample(plan_prompt)
         # Clean up JSON if LLM added fences
-        clean = raw.strip()
+        clean = str(raw).strip()
         if clean.startswith("```json"):
             clean = clean[7:]
         if clean.endswith("```"):
@@ -653,7 +726,7 @@ Return ONLY JSON: {{"achieved": true_or_false, "quality": "good|partial|failed",
 
     try:
         raw = await ctx.sample(audit_prompt)
-        clean = raw.strip()
+        clean = str(raw).strip()
         if clean.startswith("```json"):
             clean = clean[7:]
         if clean.endswith("```"):
@@ -694,7 +767,7 @@ async def root_health(request):
         {
             "status": "online",
             "service": "Universal Actuator Hub",
-            "version": "2.1.0",
+            "version": "2.1.1",
             "sota_standard": "v14.1.0",
             "timestamp": datetime.now().isoformat(),
         }
@@ -818,19 +891,228 @@ async def api_log_clear(request):
 async def chat_rest(request):
     data = await request.json()
     msg = data.get("message", "")
-    return JSONResponse(
-        {
-            "status": "success",
-            "response": f"Federation Hub received: '{msg}'. Agentic orchestrator ready to process.",
-            "timestamp": datetime.now().isoformat(),
-        }
-    )
+    return JSONResponse(_chat_reply(msg))
 
 
 @mcp.custom_route("/api/shutdown", methods=["POST"])
 async def api_shutdown(request):
     logger.warning("Shutdown requested via REST API")
-    os._exit(0)
+    # Respond 200 first so the fleet launcher can checkpoint, then exit ~500 ms
+    # later so in-flight writes flush (fleet shutdown contract).
+    try:
+        loop = asyncio.get_running_loop()
+        loop.call_later(0.5, lambda: os._exit(0))
+    except RuntimeError:
+        os._exit(0)
+    return JSONResponse({"success": True, "message": "shutting down in ~500 ms"})
+
+
+_MCP_TOOL_NAMES = (
+    "universal_actuator",
+    "universal_status",
+    "search_federated",
+    "rag_semantic_search",
+    "ingest_fleet_to_rag",
+    "rag_stats",
+    "rag_clear",
+    "glom_on",
+    "get_fleet_telemetry",
+    "universal_milestone",
+    "get_milestones_history",
+    "list_ollama_models",
+    "agentic_workflow_tool",
+    "universal_shutdown",
+)
+
+_REPO_ROOT = Path(__file__).parent.parent.parent
+
+
+@mcp.custom_route("/api/capabilities", methods=["GET"])
+async def api_capabilities(request):
+    """Standard fleet capability discovery (WEBAPP_STANDARDS 1.4)."""
+    return JSONResponse(
+        {
+            "service": "universal-actuator-mcp",
+            "version": "2.1.1",
+            "transports": ["stdio", "http"],
+            "mcp_tools": list(_MCP_TOOL_NAMES),
+            "tool_count": len(_MCP_TOOL_NAMES),
+            "rest_routes": [
+                "/api/capabilities",
+                "/api/skills",
+                "/api/v1/health",
+                "/health",
+                "/api/v1/models",
+                "/api/llm/chat",
+                "/api/llm/chat/stream",
+                "/api/v1/diagnostics",
+                "/api/fleet/servers",
+                "/telemetry",
+                "/library",
+                "/chat",
+                "/api/logs",
+                "/api/shutdown",
+            ],
+            "providers": {"ollama": "http://127.0.0.1:11434"},
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
+
+@mcp.custom_route("/api/skills", methods=["GET"])
+async def api_skills(request):
+    """Serve the domain SKILL.md so Chat can build skill-first prompts."""
+    skill_path = _REPO_ROOT / "SKILL.md"
+    if not skill_path.exists():
+        return JSONResponse({"success": False, "message": "SKILL.md not found"}, status_code=404)
+    return JSONResponse(
+        {
+            "success": True,
+            "skills": [
+                {
+                    "name": "universal-actuator",
+                    "uri": "skill://universal-actuator",
+                    "content": skill_path.read_text(encoding="utf-8"),
+                }
+            ],
+        }
+    )
+
+
+def _chat_reply(message: str) -> dict[str, Any]:
+    return {
+        "status": "success",
+        "response": f"Federation Hub received: '{message}'. Agentic orchestrator ready to process.",
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@mcp.custom_route("/api/llm/chat", methods=["POST"])
+async def api_llm_chat(request):
+    """Backend chat proxy: the ONLY path the Chat page uses (keys never leave the server)."""
+    data = await request.json()
+    message = data.get("message", "")
+    if not message and isinstance(data.get("messages"), list) and data["messages"]:
+        message = data["messages"][-1].get("content", "")
+    reply = _chat_reply(message)
+    reply["provider"] = data.get("provider", "hub-echo")
+    reply["model"] = data.get("model", "federation-hub")
+    return JSONResponse(reply)
+
+
+@mcp.custom_route("/api/llm/chat/stream", methods=["POST"])
+async def api_llm_chat_stream(request):
+    """Streaming (NDJSON) variant of the backend chat proxy."""
+    data = await request.json()
+    message = data.get("message", "")
+    reply = _chat_reply(message)["response"]
+
+    async def _chunks():
+        words = reply.split(" ")
+        for i in range(0, len(words), 8):
+            yield json.dumps({"delta": " ".join(words[i : i + 8]) + " "}) + "\n"
+        yield json.dumps({"done": True}) + "\n"
+
+    return StreamingResponse(_chunks(), media_type="application/x-ndjson")
+
+
+async def _discover_providers() -> dict[str, Any]:
+    """Probe local LLM providers (Ollama :11434, LM Studio :1234). Shared by /discover + /providers."""
+    providers: dict[str, Any] = {}
+
+    async def _probe(url: str) -> dict[str, Any]:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=2.0)) as response:
+                    return {"detected": response.status == 200, "url": url}
+        except Exception:
+            return {"detected": False, "url": url}
+
+    providers["ollama"] = await _probe("http://127.0.0.1:11434/api/tags")
+    providers["lmstudio"] = await _probe("http://127.0.0.1:1234/v1/models")
+    return providers
+
+
+@mcp.custom_route("/api/llm/discover", methods=["GET"])
+async def api_llm_discover(request):
+    """Probe local LLM providers (Ollama :11434, LM Studio :1234). Consumed by Chat on mount."""
+    return JSONResponse({"success": True, "providers": await _discover_providers()})
+
+
+@mcp.custom_route("/api/llm/providers", methods=["GET"])
+async def api_llm_providers(request):
+    """Provider registry: local detected flags + cloud configured flags (never key bytes)."""
+    found = await _discover_providers()
+    return JSONResponse(
+        {
+            "success": True,
+            "local": {
+                "ollama": {**found["ollama"], "free": True},
+                "lmstudio": {**found["lmstudio"], "free": True},
+            },
+            "cloud": {
+                "openai": {"configured": bool(os.environ.get("OPENAI_API_KEY"))},
+                "anthropic": {"configured": bool(os.environ.get("ANTHROPIC_API_KEY"))},
+            },
+        }
+    )
+
+
+@mcp.custom_route("/api/llm/onboarding", methods=["GET"])
+async def api_llm_onboarding(request):
+    """Fresh-install starter facts + recommended path for the under-hero cue."""
+    return JSONResponse(
+        {
+            "success": True,
+            "facts": [
+                "No keys needed: Ollama and LM Studio run locally and free.",
+                "Install Ollama, pull a model, then refresh Status to detect it.",
+                "Chat works without any LLM via the hub echo; agentic workflows use ctx.sample().",
+            ],
+            "recommended": "ollama",
+        }
+    )
+
+
+@mcp.custom_route("/api/v1/diagnostics", methods=["GET"])
+async def api_diagnostics(request):
+    """Full diagnostics for CUA-NSIS smoke testing: tool list, versions, health signals."""
+    rag_info: dict[str, Any] = {}
+    try:
+        rag_info = await _rag.stats()
+    except Exception as e:
+        rag_info = {"error": str(e)}
+    models = await _get_ollama_models_internal()
+    return JSONResponse(
+        {
+            "service": "universal-actuator-mcp",
+            "version": "2.1.1",
+            "status": "ok",
+            "mcp_tools": list(_MCP_TOOL_NAMES),
+            "tool_count": len(_MCP_TOOL_NAMES),
+            "rag": rag_info,
+            "ollama_models": models,
+            "system": {
+                "cpu_percent": psutil.cpu_percent(),
+                "memory_percent": psutil.virtual_memory().percent,
+            },
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
+
+@mcp.custom_route("/api/fleet/servers", methods=["GET"])
+async def api_fleet_servers(request):
+    """Same-origin proxy for the federated node registry (frontend must not hardcode node URLs)."""
+    node_base = os.environ.get("FLEET_NODE_URL", "http://127.0.0.1:10854").rstrip("/")
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{node_base}/servers", timeout=aiohttp.ClientTimeout(total=5.0)) as response:
+                data = await response.json()
+                return JSONResponse(data)
+    except Exception as e:
+        logger.warning(f"Fleet node registry unreachable at {node_base}: {e}")
+        return JSONResponse({"success": False, "message": f"node registry unreachable: {e}"}, status_code=502)
 
 
 @mcp.tool()
@@ -845,7 +1127,7 @@ async def universal_shutdown(ctx: Context) -> dict:
     ## Examples
     - universal_shutdown()
     """
-    await ctx.info(f"[{ctx.correlation_id}] Shutdown requested via MCP tool")
+    await ctx.info(f"[{_cid(ctx)}] Shutdown requested via MCP tool")
     os._exit(0)
 
 
