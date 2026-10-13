@@ -94,6 +94,8 @@ export function Chat() {
   const [personality, setPersonality] = useState(
     () => localStorage.getItem(LS_PERSONALITY) || "operator",
   );
+  const [skillContent, setSkillContent] = useState("");
+  const [skillName, setSkillName] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -122,6 +124,25 @@ export function Chat() {
     fetch(`${API_BASE}/health`)
       .then((r) => setIsConnected(r.ok))
       .catch(() => setIsConnected(false));
+    // Skill-first: load domain skill content on mount for the system preprompt.
+    fetch(`${API_BASE}/api/skills`)
+      .then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(`skills ${r.status}`)),
+      )
+      .then((data: unknown) => {
+        const list =
+          data !== null && typeof data === "object" && "skills" in data
+            ? (data as { skills: { name: string; content: string }[] }).skills
+            : [];
+        if (list.length > 0) {
+          setSkillName(list[0].name);
+          setSkillContent(list[0].content);
+        }
+      })
+      .catch(() => {
+        setSkillName(null);
+        setSkillContent("");
+      });
   }, []);
 
   const handleSubmit = useCallback(
@@ -143,10 +164,15 @@ export function Chat() {
       setIsLoading(true);
 
       try {
-        const res = await fetch(`${API_BASE}/chat`, {
+        const personalityPrompt =
+          PERSONALITIES.find((p) => p.id === personality)?.prompt ?? "";
+        const system = [skillContent, personalityPrompt]
+          .filter(Boolean)
+          .join("\n\n");
+        const res = await fetch(`${API_BASE}/api/llm/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage }),
+          body: JSON.stringify({ message: userMessage, system }),
         });
         const data = await res.json();
         const reply =
@@ -179,7 +205,7 @@ export function Chat() {
         setIsLoading(false);
       }
     },
-    [input, isLoading],
+    [input, isLoading, personality, skillContent],
   );
 
   const handleClear = useCallback(() => {
@@ -221,17 +247,25 @@ export function Chat() {
           <h2 className="text-2xl font-bold tracking-tight text-white">
             AI Command
           </h2>
-          <p className="text-slate-400">Federated tool orchestration via NL</p>
+          <p className="text-slate-300">Federated tool orchestration via NL</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-wider text-slate-500 font-mono bg-slate-800 px-2 py-0.5 rounded">
-            skill:actuator-operator
+          <span
+            data-testid="chat-skill-badge"
+            title={
+              skillName === null
+                ? "No skill loaded"
+                : `System preprompt: ${skillName}`
+            }
+            className="text-[10px] uppercase tracking-wider font-mono bg-slate-800 px-2 py-0.5 rounded text-emerald-400"
+          >
+            skill:{skillName ?? "none"}
           </span>
           <select
             data-testid="personality-select"
             value={personality}
             onChange={(e) => setPersonality(e.target.value)}
-            className="bg-slate-800 text-xs text-slate-300 border border-slate-700 rounded px-2 py-1"
+            className="bg-slate-800 text-sm text-slate-300 border border-slate-700 rounded px-2 py-1"
           >
             {PERSONALITIES.map((p) => (
               <option key={p.id} value={p.id}>
@@ -240,17 +274,17 @@ export function Chat() {
             ))}
           </select>
           {isConnected === true && (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
+            <span className="flex items-center gap-1.5 text-sm text-emerald-400 font-mono">
               <Wifi className="h-3 w-3" /> LIVE :10929
             </span>
           )}
           {isConnected === false && (
-            <span className="flex items-center gap-1.5 text-xs text-red-400 font-mono">
+            <span className="flex items-center gap-1.5 text-sm text-red-400 font-mono">
               <WifiOff className="h-3 w-3" /> OFFLINE
             </span>
           )}
           {isConnected === null && (
-            <span className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
+            <span className="flex items-center gap-1.5 text-sm text-slate-300 font-mono">
               <Loader2 className="h-3 w-3 animate-spin" /> CHECKING
             </span>
           )}
@@ -263,7 +297,7 @@ export function Chat() {
             key={p}
             type="button"
             onClick={() => setInput(p)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] border border-slate-700 text-slate-400 hover:text-white hover:border-emerald-500/40 transition-colors bg-slate-900/50"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] border border-slate-700 text-slate-300 hover:text-white hover:border-emerald-500/40 transition-colors bg-slate-900/50"
           >
             <Sparkles className="w-2.5 h-2.5" />
             {p}
@@ -291,12 +325,12 @@ export function Chat() {
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-xs font-medium ${m.role === "user" ? "text-slate-300" : "text-emerald-400"}`}
+                    className={`text-sm font-medium ${m.role === "user" ? "text-slate-300" : "text-emerald-400"}`}
                   >
                     {m.role === "user" ? "Architect" : "Federation AI"}
                   </span>
                   {m.timestamp && (
-                    <span className="text-[10px] text-slate-600">
+                    <span className="text-[10px] text-slate-300">
                       {m.timestamp}
                     </span>
                   )}
@@ -309,7 +343,7 @@ export function Chat() {
               </div>
               {m.role === "user" && (
                 <div className="h-8 w-8 shrink-0 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
-                  <User className="h-4 w-4 text-slate-400" />
+                  <User className="h-4 w-4 text-slate-300" />
                 </div>
               )}
             </div>
@@ -343,7 +377,7 @@ export function Chat() {
               variant="ghost"
               onClick={handleExport}
               disabled={messages.length === 0}
-              className="h-7 w-7 text-slate-500"
+              className="h-7 w-7 text-slate-300"
               title="Export chat"
             >
               <Download className="h-3.5 w-3.5" />
@@ -354,7 +388,7 @@ export function Chat() {
               variant="ghost"
               onClick={handleClear}
               disabled={messages.length === 0}
-              className="h-7 w-7 text-slate-500"
+              className="h-7 w-7 text-slate-300"
               title="Clear chat"
             >
               <Eraser className="h-3.5 w-3.5" />
@@ -362,7 +396,7 @@ export function Chat() {
           </div>
           <form onSubmit={handleSubmit} className="flex gap-2">
             <div className="relative flex-1">
-              <Terminal className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+              <Terminal className="absolute left-3 top-3 h-4 w-4 text-slate-300" />
               <input
                 data-testid="chat-input"
                 className="w-full bg-slate-950 border border-slate-800 rounded-md pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
