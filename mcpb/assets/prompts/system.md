@@ -433,7 +433,7 @@ Nodes with `"scheme": "sse"` and a `"url"` are auto-started by the lifespan hand
 ## CORS Configuration
 
 The FastAPI app (`mcp.http_app()`) mounts `CORSMiddleware` with:
-- `allow_origins`: `http://localhost:10745`, `http://localhost:10982`, `http://127.0.0.1:10745`, `http://127.0.0.1:10982`, `http://tauri.localhost`, `https://tauri.localhost`, `tauri://localhost`
+- `allow_origins`: `http://localhost:10745`, `http://localhost:11240`, `http://127.0.0.1:10745`, `http://127.0.0.1:11240`, `http://tauri.localhost`, `https://tauri.localhost`, `tauri://localhost`
 - `allow_origin_regex`: Comprehensive regex covering Tailscale `*.ts.net` and `*.tail-*.ts.net` domains, `tauri.localhost`, localhost, 127.0.0.1, 192.168.x.x, 10.x.x.x, 100.x.x.x (Tailscale CGNAT) — all with optional port suffixes.
 - `allow_credentials`: true
 - `allow_methods`: `["*"]`

@@ -13,8 +13,8 @@ pub struct BackendProcess(pub Mutex<Option<Child>>);
 
 // -- PER-REPO: Customize these constants --
 const BACKEND_NAME: &str = "universal-actuator-mcp-backend.exe";
-// Operator backend port (claimed as universal-actuator-mcp-native). Never 10982 (dev dashboard)
-// or 10929 (dev backend): the installed app and `start.ps1` must run side by side. Keep in sync
+// Operator backend port (claimed as universal-actuator-mcp-native). Never 11240 (dev dashboard)
+// or 11239 (dev backend): the installed app and `start.ps1` must run side by side. Keep in sync
 // with native/build.ps1 (VITE_API_BASE).
 const BACKEND_PORT: u16 = 11248;
 const BACKEND_TAG: &str = "universal-actuator-mcp-backend-x86_64-pc-windows-msvc.exe";
