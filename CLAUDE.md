@@ -4,7 +4,7 @@
 - `uv run python -m universal_actuator_mcp.server` — starts hub
 - `just lint` — ruff check
 - `just test` — pytest
-- `just dev` — uvicorn on port 10929
+- `just dev` — uvicorn on port 11239
 
 ## Key Files
 - `src/universal_actuator_mcp/server.py` — FastMCP server with 14 tools

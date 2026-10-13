@@ -31,7 +31,7 @@ When using custom routes, uvicorn must use the **factory pattern** to ensure the
 **Pattern**: `uvicorn <module>:<fastmcp_instance>.http_app --factory`
 
 ```powershell
-uvicorn universal_actuator_mcp.server:mcp.http_app --factory --port 10929
+uvicorn universal_actuator_mcp.server:mcp.http_app --factory --port 11239
 ```
 
 ## 3. Heuristics

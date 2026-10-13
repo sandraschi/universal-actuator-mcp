@@ -10,7 +10,7 @@ uv run pytest tests/ -q
 
 ## HTTP Daemon + Stdio Proxy
 
-- Daemon port: **10929** (`GET /health` → `{"status":"ok"}`); frontend :10982 (Vite proxy).
+- Daemon port: **11239** (`GET /health` → `{"status":"ok"}`); frontend :11240 (Vite proxy).
 - Entry: `server:main` — stdio for Claude Desktop, SSE/HTTP when `MCP_TRANSPORT=sse`.
 - State: LanceDB RAG + `backend/state/milestones.json` (no NSSM service; stdio-proxy
   migration per SOTA §2.3 is deferred — see CHANGELOG).
