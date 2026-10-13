@@ -106,7 +106,7 @@ The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoint
 | Tool | Description |
 |------|-------------|
 | `search_federated(query, domain)` | Parallel fan-out search across Calibre, Plex, Immich, and Memory nodes. |
-| `glom_on()` | Auto-discover and register all active MCP servers in port range 1070010900. |
+| `glom_on()` | Auto-discover and register all active MCP servers in port range 10700-10900. |
 | `get_fleet_telemetry()` | Real-time CPU, memory, active node count, and host uptime. |
 
 ### RAG & Semantic Analysis
@@ -131,10 +131,37 @@ All internal endpoints are served via `mcp.http_app` on `http://localhost:10929`
 
 | Method | Path | Description |
 |--------|------|-------------|
+| `GET` | `/api/capabilities` | Standard capability discovery (tools, routes, providers) |
+| `GET` | `/api/skills` | Domain SKILL.md for skill-first chat prompts |
 | `GET` | `/api/v1/health` | Gateway health check + RAG stats |
-| `GET` | `/api/v1/glom_on` | Returns JSON of all auto-discovered fleet nodes |
+| `GET` | `/health` | Health alias (fleet launcher probe) |
+| `GET` | `/api/v1/models` | Live Ollama model list |
+| `POST` | `/api/llm/chat` | Backend chat proxy (the only path Chat uses) |
+| `POST` | `/api/llm/chat/stream` | Streaming (NDJSON) chat proxy |
+| `GET` | `/api/v1/diagnostics` | Tool list, versions, health signals (CUA smoke) |
+| `GET` | `/api/fleet/servers` | Same-origin proxy for the node registry |
 | `GET` | `/telemetry` | Real-time host and federation metrics |
-| `GET` | `/milestones` | JSON log of all fleet-wide accomplishments |
+| `GET` | `/library` | Federated media items (`?q=&domain=`) |
+| `POST` | `/library/ingest` | Trigger RAG bulk ingest |
+| `GET` | `/api/logs` | Ring-buffer log query |
+| `POST` | `/api/shutdown` | Orderly shutdown (200 now, exit ~500 ms later) |
+
+## Install in Claude Desktop
+
+Download `universal-actuator-mcp.mcpb` from the latest GitHub release and double-click
+it, or get it any time via the release one-liner:
+
+```powershell
+Invoke-RestMethod https://github.com/sandraschi/universal-actuator-mcp/releases/latest/download/install.ps1 | Invoke-Expression
+```
+
+Other clients (Cursor, VS Code, Claude Code) via `uvx`:
+
+```json
+{ "mcpServers": { "universal-actuator": {
+  "command": "uvx", "args": ["universal-actuator-mcp"],
+  "env": { "MCP_TRANSPORT": "stdio" } } } }
+```
 
 ---
 

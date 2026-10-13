@@ -7,6 +7,51 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.1.1] — 2026-10-13
+
+### Fixed (assfix audit, SOTA rescore pending)
+
+**Security/packaging**
+- `mcpb/manifest.json`: `${PWD}` replaced with `${__dirname}` (bundle now starts on real installs);
+  tool list synced to the 10 headline tools.
+- Ruff: removed `S110`/`S112` from `ignore` (silent-swallow footgun), added `T20` print ban with
+  per-file ignores for scripts/tests; fixed the one real `S110` (`ActivityLog.query` now logs).
+- `POST /api/shutdown` now responds 200 and exits ~500 ms later (fleet shutdown contract).
+
+**Tool surface**
+- All 13 `server.py` tools + 2 media-router tools migrated to `Annotated[..., Field(...)]` params
+  with `## Return Format` + `## Examples` docstrings (no `Args:` blocks).
+- Fixed stale `mcp.server.fastmcp` import in `routers/media.py`; fixed Pydantic v1 `.dict()` in
+  `fleet_aggregator.py`.
+
+**REST**
+- New: `GET /api/capabilities`, `GET /api/skills`, `POST /api/llm/chat` + `/stream` (backend proxy),
+  `GET /api/v1/diagnostics`, `GET /api/fleet/servers` (same-origin node proxy).
+- `webapp` Tools page now uses `/api/fleet/servers` (was hardcoded `localhost:10854`).
+
+**Webapp**
+- Migrated npm → bun (`bun.lock` committed); `biome.json` migrated to 2.5.5 with `dist` excluded
+  and Tailwind directives enabled; `biome:ci` green (fixed unused imports, `any` types, index keys,
+  button types, modal a11y).
+- Fixed stale ports (`:10745` chat badge + error text, Tauri CSP `:10700`).
+- Dashboard onboarding cue (`data-testid="onboarding-cue"`).
+
+**Repo hygiene**
+- `.gitignore`: `.venv/`, `.env`, `*.mcpb`, `reports/` (+ `!docs/assess-reports/`).
+- New: `.gitattributes` (LF), `.github/workflows/ci.yml`, `.claude-plugin/`, `.windsurfrules`,
+  `.github/copilot-instructions.md`, `.opencode/skills/`, `.agents/skills/`,
+  `scripts/pre-commit-biome.ps1`, `docs/` (CONFIGURATION/DEVELOPMENT/TOOLS/TROUBLESHOOTING/ONBOARDING).
+- `justfile`: `serve`/`fmt` aliases + `ci` gate recipe.
+- Removed dead root `main.py` scaffold stub (entry is `server:main`).
+
+### Deferred (open, scored)
+
+- Inbox + Skills webapp pages (catch-them-all gap).
+- Prefab `@mcp.tool(app=True)` cards, tool `annotations=`, `output_schema=`, `@mcp.resource`/`@mcp.prompt`.
+- Zustand LLM store; `@tauri-apps/api` install + `backend-status` listener wiring.
+- Ports 10929/10982 non-adjacent (registry-level decision, do not change locally).
+- `register_media_router()` unwired (declared in docstring; `search_federated` is the live path).
+
 ## [2.1.0] — 2026-04-11
 
 ### Added
