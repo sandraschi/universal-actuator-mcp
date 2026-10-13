@@ -10,11 +10,11 @@ just bootstrap        # dev deps + pre-commit hook
 ## Run
 
 ```powershell
-just serve            # backend on :10929 (stdio for Claude Desktop by default)
+just serve            # backend on :11239 (stdio for Claude Desktop by default)
 just ci               # full local gates: ruff, format-check, pytest, tsc
 ```
 
-Frontend lives in `webapp/` (bun: `bun install`, `bun run dev` on :10982).
+Frontend lives in `webapp/` (bun: `bun install`, `bun run dev` on :11240).
 
 ## Gates
 

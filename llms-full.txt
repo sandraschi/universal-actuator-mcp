@@ -1,6 +1,6 @@
 # universal-actuator-mcp — full reference (v2.2.0, 16 tools)
 
-Industrial Federation Gateway. FastMCP 3.4+, Python 3.12+, dual transport (stdio + HTTP on port 10929). Routes actions to 15+ sub-servers via config.json.
+Industrial Federation Gateway. FastMCP 3.4+, Python 3.12+, dual transport (stdio + HTTP on port 11239). Routes actions to 15+ sub-servers via config.json.
 
 All tools return dialogic envelopes {success, message, data} with annotations + output schemas.
 
@@ -68,5 +68,5 @@ federated_search_brief, milestone_review, telemetry_triage; hub://status; skill:
 
 ## Ports
 
-- Backend: 10929 (HTTP + REST)
-- Webapp: 10982 (Vite dev)
+- Backend: 11239 (HTTP + REST)
+- Webapp: 11240 (Vite dev)

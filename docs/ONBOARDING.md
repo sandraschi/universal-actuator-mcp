@@ -18,8 +18,8 @@ Requires: Python 3.12+, `uv`, bun (frontend), Ollama optional (local LLM).
 just serve
 ```
 
-Backend: `http://127.0.0.1:10929` (`GET /health` → `{"status":"ok"}`).
-Frontend: `cd webapp; bun run dev` → `http://127.0.0.1:10982`.
+Backend: `http://127.0.0.1:11239` (`GET /health` → `{"status":"ok"}`).
+Frontend: `cd webapp; bun run dev` → `http://127.0.0.1:11240`.
 
 ## 3. Connect your first node
 
@@ -35,14 +35,14 @@ Ollama is free and optional (fallbacks otherwise).
 
 ## 5. Pitfalls
 
-- Ports **10929/10982 are non-adjacent** (registry history) — don't "fix" them locally.
+- Ports **11239/11240 are non-adjacent** (registry history) — don't "fix" them locally.
 - Never hardcode node URLs in the frontend; add backend proxy routes instead.
 - `main.py` at repo root is a dead scaffold stub, not the entry (`server:main` is).
 
 ## 6. Sanity check
 
 ```powershell
-Invoke-RestMethod http://127.0.0.1:10929/api/capabilities | ConvertTo-Json -Depth 3
+Invoke-RestMethod http://127.0.0.1:11239/api/capabilities | ConvertTo-Json -Depth 3
 ```
 
 Expect `tool_count: 14`.

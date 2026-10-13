@@ -2,7 +2,7 @@
 
 ## Backend won't start / port busy
 
-`start.ps1` clears zombies via the fleet engine. Manual: check `:10929`
+`start.ps1` clears zombies via the fleet engine. Manual: check `:11239`
 with `GET /health` — expect `{"status":"ok"}`.
 
 ## Dashboard shows OFFLINE
@@ -24,7 +24,7 @@ Start Ollama to get the live list.
 
 ## Tauri webview blocked
 
-`native/tauri.conf.json` CSP allows `127.0.0.1:10929` + `:10982`. Installer builds
+`native/tauri.conf.json` CSP allows `127.0.0.1:11239` + `:11240`. Installer builds
 set `VITE_API_BASE` (see `native/build.ps1`); dev uses the Vite proxy.
 
 ## Biome fails on dist/
