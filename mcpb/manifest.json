@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "universal-actuator-mcp",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Fleet-wide Federation Gateway (Robotics, Media, Infrastructure, Knowledge)",
   "author": { "name": "sandraschi" },
   "server": {

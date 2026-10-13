@@ -16,8 +16,8 @@
 [![FastMCP](https://img.shields.io/badge/FastMCP-3.1.1-blue)](https://github.com/jlowin/fastmcp)
 [![Vite](https://img.shields.io/badge/Vite-6-purple)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
-[![Port](https://img.shields.io/badge/Backend-10929-orange)](http://localhost:10929)
-[![Port](https://img.shields.io/badge/Frontend-10982-green)](http://localhost:10982)
+[![Port](https://img.shields.io/badge/Backend-11239-orange)](http://localhost:11239)
+[![Port](https://img.shields.io/badge/Frontend-11240-green)](http://localhost:11240)
 [![Status](https://img.shields.io/badge/Status-v2.0.0-emerald)]()
 
 ---
@@ -57,8 +57,8 @@ The Universal Actuator Hub is a **Federation Gateway** refactored to serve as th
 
 | Layer | Stack | Port | Purpose |
 |-------|-------|------|---------|
-| **MCP Backend** | FastMCP 3.2.0 + Python | `10929` (`sse`) | MCP tools + REST API Gateway |
-| **Web Dashboard** | Vite + React 19 + Tailwind | `10982` | Live fleet monitoring & control |
+| **MCP Backend** | FastMCP 3.2.0 + Python | `11239` (`sse`) | MCP tools + REST API Gateway |
+| **Web Dashboard** | Vite + React 19 + Tailwind | `11240` | Live fleet monitoring & control |
 
 The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoints** (for the frontend dashboard) via a single FastMCP `mcp.http_app` ASGI application.
 
@@ -85,10 +85,10 @@ The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoint
   Media (Calibre/Plex/Immich)    stdio (sub-process spawn)               
   Robotics (OSC/Unity)           udp/stdio                               
 
-                          SSE / REST (localhost:10929)
+                          SSE / REST (localhost:11239)
               
                   Vite Frontend    
-                 localhost:10982    
+                 localhost:11240    
                                    
                 /           Dashboard + live telemetry
                 /status     Federation health & node status
@@ -139,7 +139,7 @@ docstrings. Set `UA_PREFAB_APPS=0` to skip card registration (headless CI).
 
 ## REST Endpoints (Internal Gateway)
 
-All internal endpoints are served via `mcp.http_app` on `http://localhost:10929`:
+All internal endpoints are served via `mcp.http_app` on `http://localhost:11239`:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -194,7 +194,7 @@ The project includes a robust PowerShell orchestration script that clears port s
 ### Manual Individual Launch
 **Backend (FastMCP SSE)**:
 ```powershell
-uv run uvicorn universal_actuator_mcp.server:mcp.http_app --host 127.0.0.1 --port 10929
+uv run uvicorn universal_actuator_mcp.server:mcp.http_app --host 127.0.0.1 --port 11239
 ```
 
 **Frontend (Vite Dev)**:
@@ -209,7 +209,7 @@ Add this to your `mcp_config.json`:
   "mcpServers": {
     "universal-actuator": {
       "command": "uv",
-      "args": ["--directory", "D:/Dev/repos/universal-actuator-mcp", "run", "uvicorn", "universal_actuator_mcp.server:mcp.http_app", "--host", "127.0.0.1", "--port", "10929"],
+      "args": ["--directory", "D:/Dev/repos/universal-actuator-mcp", "run", "uvicorn", "universal_actuator_mcp.server:mcp.http_app", "--host", "127.0.0.1", "--port", "11239"],
       "cwd": "D:/Dev/repos/universal-actuator-mcp"
     }
   }

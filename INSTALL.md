@@ -47,7 +47,7 @@ If you prefer not to use `just`:
    uv run python -m universal_actuator_mcp.server
 
    # HTTP mode (for web dashboard)
-   uv run uvicorn universal_actuator_mcp.server:app --port 10982
+   uv run uvicorn universal_actuator_mcp.server:app --port 11240
    ```
 
 4. (optional) Start the frontend:
@@ -57,7 +57,7 @@ If you prefer not to use `just`:
    npm run dev
    ```
 
-5. Open `http://localhost:10982` or the frontend URL.
+5. Open `http://localhost:11240` or the frontend URL.
 
 ---
 
