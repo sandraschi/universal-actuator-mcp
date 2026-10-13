@@ -32,10 +32,11 @@ async def test_agentic_workflow_success(mock_ctx):
 
         res = await agentic_workflow_tool(goal="Audit fleet", ctx=mock_ctx)
 
-        assert res["goal"] == "Audit fleet"
-        assert res["steps_executed"] == 1
-        assert res["steps_succeeded"] == 1
-        assert res["audit"]["achieved"] is True
+        assert res["success"] is True
+        assert res["data"]["goal"] == "Audit fleet"
+        assert res["data"]["steps_executed"] == 1
+        assert res["data"]["steps_succeeded"] == 1
+        assert res["data"]["audit"]["achieved"] is True
         mock_dispatch.assert_called_once_with("get_fleet_telemetry", {})
 
 
@@ -49,8 +50,8 @@ async def test_agentic_workflow_plan_failure(mock_ctx):
         res = await agentic_workflow_tool(goal="Bad plan", ctx=mock_ctx)
 
         # Should fallback to a basic health check
-        assert res["steps_executed"] == 1
-        assert res["plan"]["steps"][0]["tool"] == "get_fleet_telemetry"
+        assert res["data"]["steps_executed"] == 1
+        assert res["data"]["plan"]["steps"][0]["tool"] == "get_fleet_telemetry"
 
 
 @pytest.mark.asyncio
@@ -58,6 +59,6 @@ async def test_agentic_workflow_step_failure(mock_ctx):
     with patch("universal_actuator_mcp.server._dispatch_tool", side_effect=ValueError("Tool crash")):
         res = await agentic_workflow_tool(goal="Failing tool", ctx=mock_ctx)
 
-        assert res["steps_succeeded"] == 0
-        assert res["steps_executed"] == 1
-        assert res["steps_taken"][0]["status"] == "failed"
+        assert res["data"]["steps_succeeded"] == 0
+        assert res["data"]["steps_executed"] == 1
+        assert res["data"]["steps_taken"][0]["status"] == "failed"
