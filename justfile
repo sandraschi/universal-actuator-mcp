@@ -52,22 +52,22 @@ ci:
 # Start the Hub in Dev Mode (Reload)
 dev:
     Set-Location '{{justfile_directory()}}'
-    uv run uvicorn universal_actuator_mcp.server:app --reload --port 10745
+    uv run uvicorn universal_actuator_mcp.server:app --reload --port 11239
 
 # Trigger industrial RAG ingestion via CLI
 ingest:
     Set-Location '{{justfile_directory()}}'
-    Invoke-RestMethod -Method POST -Uri http://127.0.0.1:10745/library/ingest | ConvertTo-Json
+    Invoke-RestMethod -Method POST -Uri http://127.0.0.1:11239/library/ingest | ConvertTo-Json
 
 # Check health of the Hub
 status:
     Set-Location '{{justfile_directory()}}'
-    Invoke-RestMethod -Method GET -Uri http://127.0.0.1:10745/api/v1/health | ConvertTo-Json
+    Invoke-RestMethod -Method GET -Uri http://127.0.0.1:11239/api/v1/health | ConvertTo-Json
 
 # Check Fleet Telemetry
 fleet:
     Set-Location '{{justfile_directory()}}'
-    Invoke-RestMethod -Method GET -Uri http://127.0.0.1:10745/telemetry | ConvertTo-Json
+    Invoke-RestMethod -Method GET -Uri http://127.0.0.1:11239/telemetry | ConvertTo-Json
 
 # Automated fleet autostart (headless/background)
 autostart:

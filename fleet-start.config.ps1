@@ -2,8 +2,8 @@
 # Edit ports/backend target here - start.ps1 is fleet-standard.
 @{
     Name         = 'universal-actuator-mcp'
-    BackendPort  = 10929
-    FrontendPort = 10982
+    BackendPort  = 11239
+    FrontendPort = 11240
     HealthPath   = '/health'
     WebRoot      = 'webapp'
     Backend = @{
@@ -11,7 +11,7 @@
         UvicornTarget = 'universal_actuator_mcp.server:app'
         SyncExtras    = @('dev')
         SyncOnStart  = $true
-        Env           = @{ WEB_PORT = '10929' }
+        Env           = @{ WEB_PORT = '11239' }
     }
     Frontend = @{
         Kind           = 'vite-npm'
