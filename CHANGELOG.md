@@ -7,6 +7,31 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.2.0] — 2026-10-13
+
+### Added (deferred batch from assfix 2026-10-13)
+- MCP Apps: `show_fleet_status_card`, `show_rag_stats_card` (`@mcp.tool(app=True)`,
+  ToolResult + text fallback, `UA_PREFAB_APPS=0` opt-out).
+- `annotations=` on all 16 tools; `output_schema=` dialogic envelopes on all 14 dict tools.
+- Dialogic returns: every tool returns `{success, message, data}` (failures add `dialogic`
+  remediation); `_error_response()` helper with `logger.exception()`.
+- Prompts: `federated_search_brief`, `milestone_review`, `telemetry_triage`.
+- Resources: `hub://status`; `SkillsDirectoryProvider` rooted at `skills/`
+  (`SKILL.md` moved from repo root, history preserved via `git mv`).
+- REST: `GET /api/milestones`, `GET /api/llm/discover|providers|onboarding`.
+- Stdio probe: `main()` proxies to the HTTP daemon via `FastMCPProxy` (55s fwd timeout
+  against the proxy-wedge class) instead of double-initialising LanceDB.
+- Webapp: Inbox (`/inbox`, milestones + activity) and Skills (`/skills`, skill browser) pages;
+  Chat skill-first (`/api/skills` preprompt + badge, `/api/llm/chat` proxy with skill receipt);
+  LLM page wired (discover/providers, dropdowns persisted, test button);
+  backend-status hook (Tauri event + HTTP poll) with topbar dot; `@tauri-apps/api` installed.
+- Font/contrast sweep: no `text-xs` outside code, no slate-400/500/600 body text.
+- Tests: 44 pass (9 new for cards/resources/routes/probe/classification), coverage 64%.
+
+### Deferred (kept open)
+- Ports 10929/10982 non-adjacent: 10928/10930 are taken by lewm/songgeneration — no free
+  adjacent port, move would break 3 repos.
+
 ## [2.1.1] — 2026-10-13
 
 ### Fixed (assfix audit, SOTA rescore pending)

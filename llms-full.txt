@@ -1,6 +1,8 @@
-# universal-actuator-mcp — full reference
+# universal-actuator-mcp — full reference (v2.2.0, 16 tools)
 
 Industrial Federation Gateway. FastMCP 3.4+, Python 3.12+, dual transport (stdio + HTTP on port 10929). Routes actions to 15+ sub-servers via config.json.
+
+All tools return dialogic envelopes {success, message, data} with annotations + output schemas.
 
 ## Tools
 
@@ -43,9 +45,19 @@ SEP-1577: Plan → Execute → Audit via ctx.sample().
 ### universal_shutdown()
 Graceful server termination.
 
+### show_fleet_status_card() / show_rag_stats_card()
+Prefab App cards (ToolResult + text fallback). Disable with UA_PREFAB_APPS=0.
+
+### Prompts & resources
+federated_search_brief, milestone_review, telemetry_triage; hub://status; skill://universal-actuator.
+
 ## REST Endpoints
 
 - GET /api/v1/health — liveness
+- GET /api/capabilities — tool/route registry
+- GET /api/skills — domain skill (skill-first chat)
+- GET /api/milestones — milestone timeline (Inbox page)
+- GET /api/llm/discover|providers|onboarding — local LLM wiring
 - GET /api/v1/deps — dependency versions
 - GET /api/v1/models — Ollama models
 - GET /telemetry — live telemetry

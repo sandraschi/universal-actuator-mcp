@@ -123,6 +123,18 @@ The backend exposes both **MCP tools** (for IDE agents) and **REST HTTP endpoint
 | `universal_milestone(title, description, type)` | Log a persistent milestone to the centralized fleet audit trail. |
 | `get_milestones_history()` | Retrieve the full historical record of agentic accomplishments. |
 
+### In-Chat Apps, Prompts & Resources
+| Surface | Description |
+|---------|-------------|
+| `show_fleet_status_card()` | Prefab card: fleet health, nodes, host metrics (MCP App). |
+| `show_rag_stats_card()` | Prefab card: RAG index size, model, per-source counts (MCP App). |
+| Prompts | `federated_search_brief`, `milestone_review`, `telemetry_triage` via `@mcp.prompt`. |
+| Resources | `hub://status` live snapshot; `skill://universal-actuator` via SkillsDirectoryProvider. |
+
+All 16 tools carry `annotations=` (READ_ONLY/MUTATING/DESTRUCTIVE), `output_schema=`
+dialogic envelopes (`{success, message, data}`), and `## Return Format` + `## Examples`
+docstrings. Set `UA_PREFAB_APPS=0` to skip card registration (headless CI).
+
 ---
 
 ## REST Endpoints (Internal Gateway)
@@ -138,7 +150,11 @@ All internal endpoints are served via `mcp.http_app` on `http://localhost:10929`
 | `GET` | `/api/v1/models` | Live Ollama model list |
 | `POST` | `/api/llm/chat` | Backend chat proxy (the only path Chat uses) |
 | `POST` | `/api/llm/chat/stream` | Streaming (NDJSON) chat proxy |
+| `GET` | `/api/llm/discover` | Local provider probe (Ollama/LM Studio) |
+| `GET` | `/api/llm/providers` | Provider registry (never key bytes) |
+| `GET` | `/api/llm/onboarding` | Starter facts for the onboarding cue |
 | `GET` | `/api/v1/diagnostics` | Tool list, versions, health signals (CUA smoke) |
+| `GET` | `/api/milestones` | Milestone timeline (`?limit=`) for the Inbox page |
 | `GET` | `/api/fleet/servers` | Same-origin proxy for the node registry |
 | `GET` | `/telemetry` | Real-time host and federation metrics |
 | `GET` | `/library` | Federated media items (`?q=&domain=`) |
@@ -207,6 +223,8 @@ Add this to your `mcp_config.json`:
 | Page | Route | Data Source |
 |------|-------|-------------|
 | **Dashboard** | `/` | Aggregated telemetry and milestone feed |
+| **Inbox** | `/inbox` | Milestone timeline + recent hub activity |
+| **Skills** | `/skills` | Domain skill browser (skill:// resources) |
 | **Status** | `/status` | Real-time node status and federation health cards |
 | **Library** | `/library` | Federated asset search across Calibre, Plex, and Immich |
 | **Apps Hub** | `/apps` | Fleet-wide app launcher and discovery grid |

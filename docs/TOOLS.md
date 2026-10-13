@@ -1,6 +1,8 @@
-# Tools — universal-actuator-mcp (14 MCP tools)
+# Tools — universal-actuator-mcp (16 MCP tools)
 
-All tools use `Annotated[...]` params, `## Return Format` + `## Examples` docstrings.
+All tools use `Annotated[...]` params, `## Return Format` + `## Examples` docstrings,
+`annotations=` (READ_ONLY/MUTATING/DESTRUCTIVE), `output_schema=` dialogic envelopes
+(`{success, message, data}`; failures add a `dialogic` remediation block).
 
 | Tool | Purpose |
 |---|---|
@@ -17,11 +19,22 @@ All tools use `Annotated[...]` params, `## Return Format` + `## Examples` docstr
 | `list_ollama_models()` | Live Ollama models (fallbacks when unreachable) |
 | `agentic_workflow_tool(goal, max_steps)` | SEP-1577 plan → execute → audit via `ctx.sample()` |
 | `universal_shutdown()` | Graceful termination |
+| `show_fleet_status_card()` | Prefab App card: fleet health (ToolResult + text fallback) |
+| `show_rag_stats_card()` | Prefab App card: RAG index stats (ToolResult + text fallback) |
+
+## Prompts & resources
+
+- Prompts (`@mcp.prompt`): `federated_search_brief`, `milestone_review`, `telemetry_triage`.
+- Resources: `hub://status` (live snapshot JSON), `skill://universal-actuator` via
+  `SkillsDirectoryProvider` rooted at `skills/` (disable cards with `UA_PREFAB_APPS=0`).
 
 ## REST (same-origin via Vite proxy)
 
 `GET /api/capabilities`, `GET /api/skills`, `GET /api/v1/health`, `GET /health`,
 `GET /api/v1/models`, `POST /api/llm/chat` + `POST /api/llm/chat/stream` (backend proxy —
 the only path Chat uses), `GET /api/v1/diagnostics`, `GET /api/fleet/servers`,
+`GET /api/v1/diagnostics`, `GET /api/fleet/servers`,
 `GET /telemetry`, `GET/POST /library`, `POST /chat` (legacy alias), `POST /api/shutdown`
 (responds 200, exits ~500 ms later).
+
+New in 2.2.0: `GET /api/milestones` (`?limit=`), `GET /api/llm/discover|providers|onboarding`.
