@@ -1,4 +1,9 @@
 ; Kill UI + backend before install/uninstall (backend locks resources/*.exe).
+; AI-client registration runs via the vendored mcp-clients.nsh include below
+; (canonical: mcp-central-docs/scripts/nsis/mcp-clients.nsh).
+!define MCP_REG_NAME "universal-actuator-mcp"
+!define MCP_REG_EXE "universal-actuator-mcp-backend.exe"
+!include "mcp-clients.nsh"
 !macro KillUniversalActuatorMcpFleetProcesses
   DetailPrint "Stopping universal-actuator-mcp processes..."
   ExecWait 'taskkill /F /IM universal-actuator-mcp-backend.exe /T' $0
