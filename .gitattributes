@@ -1,0 +1,6 @@
+# Fleet LF normalization: all text files use LF line endings.
+# Prevents Biome CRLF CI failures on Windows checkouts.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.exe binary

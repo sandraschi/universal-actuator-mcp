@@ -36,6 +36,19 @@ run:
     Set-Location '{{justfile_directory()}}'
     uv run python -m universal_actuator_mcp.server
 
+# Fleet-standard alias: serve == run (assfix 2026-10-13)
+serve:
+    Set-Location '{{justfile_directory()}}'
+    uv run python -m universal_actuator_mcp.server
+
+# Fleet-standard alias: fmt == fix (assfix 2026-10-13)
+fmt:
+    Set-Location '{{justfile_directory()}}'; uv run ruff check . --fix --unsafe-fixes; uv run ruff format .; Set-Location '{{justfile_directory()}}\webapp'; npx @biomejs/biome check --write .
+
+# Full local gate set (mirrors CI): lint + format-check + tests + webapp typecheck
+ci:
+    Set-Location '{{justfile_directory()}}'; uv run ruff check .; uv run ruff format --check .; uv run pytest tests/ -q; Set-Location '{{justfile_directory()}}\webapp'; npx tsc --noEmit
+
 # Start the Hub in Dev Mode (Reload)
 dev:
     Set-Location '{{justfile_directory()}}'
@@ -73,6 +86,6 @@ test-cov:
 
 # Bootstrap: install dev deps + pre-commit hook
 bootstrap:
-    uv sync --group dev
+    uv sync --extra dev --group dev
     uv run pre-commit install
     Write-Host "Pre-commit hooks installed." -ForegroundColor Green

@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "universal-actuator-mcp",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "description": "Fleet-wide Federation Gateway (Robotics, Media, Infrastructure, Knowledge)",
   "author": { "name": "sandraschi" },
   "server": {
@@ -9,15 +9,23 @@
     "entry_point": "src/universal_actuator_mcp/server.py",
     "mcp_config": {
       "command": "uv",
-      "args": ["run","--directory","${PWD}","python","-m","universal_actuator_mcp"],
+      "args": ["run", "--directory", "${__dirname}", "python", "-m", "universal_actuator_mcp"],
       "env": {
-        "PYTHONPATH": "${PWD}/src",
+        "PYTHONPATH": "${__dirname}/src",
         "PYTHONUNBUFFERED": "1"
       }
     }
   },
   "tools": [
-    { "name": "universal_actuator", "description": "universal_actuator" },
-    { "name": "search_library", "description": "search_library" }
+    { "name": "universal_actuator", "description": "Cross-domain portmanteau router" },
+    { "name": "universal_status", "description": "Hub health dashboard" },
+    { "name": "search_federated", "description": "Fan-out search across fleet nodes" },
+    { "name": "rag_semantic_search", "description": "LanceDB vector search" },
+    { "name": "ingest_fleet_to_rag", "description": "Bulk ingest into RAG index" },
+    { "name": "glom_on", "description": "Auto-discover fleet nodes" },
+    { "name": "get_fleet_telemetry", "description": "Host + fleet telemetry" },
+    { "name": "universal_milestone", "description": "Record a milestone" },
+    { "name": "agentic_workflow_tool", "description": "SEP-1577 plan-execute-audit" },
+    { "name": "universal_shutdown", "description": "Graceful termination" }
   ]
 }
