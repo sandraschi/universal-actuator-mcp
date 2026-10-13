@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "universal-actuator-mcp"
-version = "2.0.0"
+version = "2.1.1"
 description = "Fleet-wide Federation Gateway (Robotics, Media, Infrastructure, Knowledge)"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -50,17 +50,22 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 python_files = "test_*.py"
+addopts = ["--cov=src/universal_actuator_mcp", "--cov-report=term-missing", "--cov-fail-under=60"]
 
 [tool.ruff]
 line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "S", "UP", "RUF"]
-ignore = ["S101", "B008", "S106", "S110", "S112", "S101", "B008", "S106", "S110", "S112", "RUF012", "S603", "S607", "S324", "E402", "E501"]
+select = ["E", "F", "W", "I", "B", "S", "UP", "RUF", "T20"]
+ignore = ["S101", "B008", "S106", "RUF012", "S603", "S607", "S324", "E402", "E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "scripts/cua-smoke.py" = ["S310"]
+# CLI/build/test runners may print; server runtime (src/) must log instead (T20).
+"scripts/*" = ["T20"]
+"tests/*" = ["T20"]
+"main.py" = ["T20"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -71,6 +76,7 @@ dev = [
     "pillow>=12.3.0",
     "pytesseract>=0.3.13",
     "pywinauto>=0.6.9",
+    "pyright>=1.1.0",
 ]
 
 [project.optional-dependencies]

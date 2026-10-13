@@ -6,10 +6,10 @@
     "type": "mcp_server",
     "status": "beta",
     "framework": "Python / FastMCP",
-    "version": "2.0.0",
+    "version": "2.1.1",
     "icon": "hub",
     "homeUrl": "https://github.com/sandraschi/universal-actuator-mcp",
-    "tools": 13,
+    "tools": 14,
     "transport": ["stdio", "sse"],
     "keywords": ["federation", "router", "facade", "universal", "automation"],
     "features": {

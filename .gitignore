@@ -22,3 +22,12 @@ __pycache__/
 # on every pack. Never hand-edit, never commit.
 mcpb/src/
 
+# Fleet standards (assfix 2026-10-13): venv, secrets, bundles, working snapshots
+.venv/
+.env
+*.mcpb
+reports/
+.coverage
+# ...but the registry-visible assess copy IS committed
+!docs/assess-reports/
+
