@@ -11,16 +11,16 @@ export default defineConfig({
   },
   server: {
     allowedHosts: ["goliath"],
-    port: 10982,
+    port: 11240,
     strictPort: true,
     host: "127.0.0.1",
     proxy: {
-      "/api": { target: "http://127.0.0.1:10929", changeOrigin: true },
-      "/library": { target: "http://127.0.0.1:10929", changeOrigin: true },
-      "/telemetry": { target: "http://127.0.0.1:10929", changeOrigin: true },
-      "/health": { target: "http://127.0.0.1:10929", changeOrigin: true },
-      "/chat": { target: "http://127.0.0.1:10929", changeOrigin: true },
-      "/launch": { target: "http://127.0.0.1:10929", changeOrigin: true },
+      "/api": { target: "http://127.0.0.1:11239", changeOrigin: true },
+      "/library": { target: "http://127.0.0.1:11239", changeOrigin: true },
+      "/telemetry": { target: "http://127.0.0.1:11239", changeOrigin: true },
+      "/health": { target: "http://127.0.0.1:11239", changeOrigin: true },
+      "/chat": { target: "http://127.0.0.1:11239", changeOrigin: true },
+      "/launch": { target: "http://127.0.0.1:11239", changeOrigin: true },
     },
   },
 });
