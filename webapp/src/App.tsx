@@ -11,10 +11,12 @@ import { Chat } from "@/pages/chat";
 import { Control } from "@/pages/control";
 import { Dashboard } from "@/pages/dashboard";
 import { Help } from "@/pages/help";
+import { Inbox } from "@/pages/inbox";
 import MediaLibrary from "@/pages/library";
 import { LocalLLM } from "@/pages/llm";
 import Logs from "@/pages/logs";
 import { Settings } from "@/pages/settings";
+import { Skills } from "@/pages/skills";
 import { Status } from "@/pages/status";
 import { ToolsPage } from "@/pages/tools";
 import { Visualizer } from "@/pages/visualizer";
@@ -28,6 +30,8 @@ function App() {
           <Route path="/control" element={<Control />} />
           <Route path="/visualizer" element={<Visualizer />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/inbox" element={<Inbox />} />
+          <Route path="/skills" element={<Skills />} />
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="/apps" element={<AppsHub />} />
           <Route path="/llm" element={<LocalLLM />} />
