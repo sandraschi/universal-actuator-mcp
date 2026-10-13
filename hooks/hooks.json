@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "text",
+        "text": "## Session Context (Universal Actuator MCP)\nFederation gateway: 14 tools (universal_actuator, search_federated, rag_semantic_search, glom_on, get_fleet_telemetry, agentic_workflow_tool, ...).\nBefore starting work: check universal_status(), then search_federated(query=...).\nAt end of work: record universal_milestone(title=..., description=...)."
+      }
+    ]
+  }
+}

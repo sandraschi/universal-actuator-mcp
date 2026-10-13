@@ -1,0 +1,11 @@
+## Session Context (Universal Actuator MCP)
+
+Federation gateway that consolidates 15+ MCP servers into a single tool interface with RAG and agentic workflows.
+
+**Before starting work:**
+1. Check hub status: `universal_status()` — federation graph, registered domains
+2. Search federated content: `search_federated(query="...", sources=["calibre","knowledge"])`
+
+**At end of work:**
+- Record progress with `universal_milestone(title="...", description="...")`
+- Ingest new content to RAG if relevant: `ingest_fleet_to_rag(source="...")`

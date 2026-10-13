@@ -1,0 +1,6 @@
+{
+  "name": "universal-actuator-mcp",
+  "description": "Federation gateway: 14 MCP tools for cross-domain search, RAG, telemetry and agentic workflows.",
+  "version": "2.1.0",
+  "hooks": "../hooks/hooks.json"
+}
