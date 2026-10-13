@@ -63,7 +63,7 @@ export function Visualizer() {
           <h2 className="text-2xl font-bold tracking-tight text-white">
             Federation Graph
           </h2>
-          <p className="text-slate-400">
+          <p className="text-slate-300">
             Real-time topology of cross-domain mappings
           </p>
         </div>

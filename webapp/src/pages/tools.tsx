@@ -23,7 +23,7 @@ import {
 interface ToolInfo {
   name: string;
   description: string;
-  inputSchema: unknown;
+  inputSchema: { required?: string[] } | null;
 }
 
 interface ServerInfo {
@@ -56,7 +56,7 @@ function ToolDrilldown({
               <Box className="h-6 w-6 text-emerald-400" />
               {server.name}
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription className="text-slate-300">
               {server.description}
             </DialogDescription>
           </div>
@@ -66,7 +66,7 @@ function ToolDrilldown({
           {/* Capabilities & Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 backdrop-blur-sm">
-              <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">
+              <div className="text-sm text-slate-300 uppercase tracking-widest mb-1">
                 Status
               </div>
               <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ function ToolDrilldown({
               </div>
             </div>
             <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 backdrop-blur-sm">
-              <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">
+              <div className="text-sm text-slate-300 uppercase tracking-widest mb-1">
                 Type
               </div>
               <div className="text-sm font-mono text-blue-400">
@@ -90,7 +90,7 @@ function ToolDrilldown({
               </div>
             </div>
             <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 backdrop-blur-sm">
-              <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">
+              <div className="text-sm text-slate-300 uppercase tracking-widest mb-1">
                 Version
               </div>
               <div className="text-sm text-slate-300">
@@ -101,7 +101,7 @@ function ToolDrilldown({
 
           {/* Capabilities Tags */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-slate-400 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <Layers className="h-4 w-4" /> Capabilities
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -119,7 +119,7 @@ function ToolDrilldown({
 
           {/* Tools List */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-slate-400 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <Terminal className="h-4 w-4" /> Tools Portmanteau (
               {server.tools.length})
             </h3>
@@ -139,29 +139,32 @@ function ToolDrilldown({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-white"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-white"
                     >
                       <ExternalLink className="h-3 w-3" />
                     </Button>
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                  <p className="text-sm text-slate-300 leading-relaxed mb-4">
                     {tool.description}
                   </p>
 
                   {/* Argument Schema Mini-View */}
                   <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800/50">
-                    <div className="text-[10px] text-slate-600 uppercase mb-2">
+                    <div className="text-[10px] text-slate-300 uppercase mb-2">
                       Required Arguments
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {tool.inputSchema?.required?.map((req: string) => (
-                        <span
-                          key={req}
-                          className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] border border-emerald-500/20 font-mono"
-                        >
-                          {req}
-                        </span>
-                      )) || (
+                      {Array.isArray(tool.inputSchema?.required) &&
+                      tool.inputSchema.required.length > 0 ? (
+                        tool.inputSchema.required.map((req: string) => (
+                          <span
+                            key={req}
+                            className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] border border-emerald-500/20 font-mono"
+                          >
+                            {req}
+                          </span>
+                        ))
+                      ) : (
                         <span className="text-[10px] text-slate-700 italic">
                           No required arguments
                         </span>
@@ -270,13 +273,13 @@ export function ToolsPage() {
           <h2 className="text-3xl font-bold tracking-tight text-white">
             Tools & Domains
           </h2>
-          <p className="text-slate-400">
+          <p className="text-slate-300">
             Deep discovery of federated MCP capabilities
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-300" />
             <input
               className="bg-slate-900 border-slate-800 rounded-md pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-[200px] lg:w-[300px]"
               placeholder="Filter capabilities..."
@@ -332,11 +335,11 @@ export function ToolsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p className="text-xs text-slate-400 line-clamp-2 min-h-[32px]">
+                    <p className="text-sm text-slate-300 line-clamp-2 min-h-[32px]">
                       {server.description}
                     </p>
 
-                    <div className="flex items-center gap-4 text-[10px] text-slate-500 font-mono">
+                    <div className="flex items-center gap-4 text-[10px] text-slate-300 font-mono">
                       <div className="flex items-center gap-1">
                         <Terminal className="h-3 w-3" />
                         <span>{server.tools.length} TOOLS</span>
@@ -353,13 +356,13 @@ export function ToolsPage() {
                           <Badge
                             key={cap}
                             variant="secondary"
-                            className="bg-slate-900 text-[9px] text-slate-400 border-slate-800"
+                            className="bg-slate-900 text-[9px] text-slate-300 border-slate-800"
                           >
                             {cap}
                           </Badge>
                         ))}
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-emerald-500 transition-colors" />
+                      <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
                     </div>
                   </div>
                 </CardContent>
@@ -381,7 +384,7 @@ export function ToolsPage() {
                 <div className="text-2xl font-bold text-white">
                   {servers.length}
                 </div>
-                <div className="text-[10px] text-slate-500 uppercase">
+                <div className="text-[10px] text-slate-300 uppercase">
                   Registered Servers
                 </div>
               </div>
@@ -396,7 +399,7 @@ export function ToolsPage() {
                 <div className="text-2xl font-bold text-white">
                   {servers.reduce((acc, s) => acc + s.tools.length, 0)}
                 </div>
-                <div className="text-[10px] text-slate-500 uppercase">
+                <div className="text-[10px] text-slate-300 uppercase">
                   Available Tools
                 </div>
               </div>

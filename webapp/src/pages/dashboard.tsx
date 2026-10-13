@@ -24,7 +24,7 @@ export function Dashboard() {
           <h2 className="text-2xl font-bold tracking-tight text-white">
             Federation Overview
           </h2>
-          <p className="text-slate-400">Gateway status and domain health</p>
+          <p className="text-slate-300">Gateway status and domain health</p>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export function Dashboard() {
         <CardHeader>
           <div className="flex items-center gap-2 text-primary mb-2">
             <HelpCircle className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-widest">
+            <span className="text-sm font-bold uppercase tracking-widest">
               Protocol Mission
             </span>
           </div>
@@ -52,7 +52,7 @@ export function Dashboard() {
               <Server className="w-4 h-4 text-emerald-400" />
               Federate
             </h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-sm text-slate-300">
               Connect disparate MCP servers into a single toolbus.
             </p>
           </div>
@@ -61,7 +61,7 @@ export function Dashboard() {
               <Zap className="w-4 h-4 text-orange-400" />
               Orchestrate
             </h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-sm text-slate-300">
               Run natural language tasks that span multiple repositories and
               services.
             </p>
@@ -71,7 +71,7 @@ export function Dashboard() {
               <Bot className="w-4 h-4 text-blue-400" />
               Empower
             </h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-sm text-slate-300">
               Built for developers and researchers who need AI agents in the
               real world.
             </p>
@@ -89,7 +89,7 @@ export function Dashboard() {
             <Button
               asChild
               variant="ghost"
-              className="text-slate-400 hover:text-white"
+              className="text-slate-300 hover:text-white"
             >
               <Link to="/chat">Try a Command</Link>
             </Button>
@@ -113,7 +113,7 @@ export function Dashboard() {
             Status
           </Link>{" "}
           for the backend, then read{" "}
-          <span className="font-mono text-xs">docs/ONBOARDING.md</span> to
+          <span className="font-mono text-sm">docs/ONBOARDING.md</span> to
           connect your first node.
         </p>
       </div>
@@ -125,11 +125,11 @@ export function Dashboard() {
             <CardTitle className="text-sm font-medium text-slate-200">
               Active Domains
             </CardTitle>
-            <Server className="h-4 w-4 text-slate-600" />
+            <Server className="h-4 w-4 text-slate-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-600">—</div>
-            <p className="text-xs text-slate-600">Waiting for backend</p>
+            <div className="text-2xl font-bold text-slate-300">—</div>
+            <p className="text-sm text-slate-300">Waiting for backend</p>
           </CardContent>
         </Card>
         <Card className="border-slate-800 bg-slate-950/50 backdrop-blur-md glass opacity-60">
@@ -137,11 +137,11 @@ export function Dashboard() {
             <CardTitle className="text-sm font-medium text-slate-200">
               Gateway Load
             </CardTitle>
-            <Activity className="h-4 w-4 text-slate-600" />
+            <Activity className="h-4 w-4 text-slate-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-600">—</div>
-            <p className="text-xs text-slate-600">Waiting for backend</p>
+            <div className="text-2xl font-bold text-slate-300">—</div>
+            <p className="text-sm text-slate-300">Waiting for backend</p>
           </CardContent>
         </Card>
         <Card className="border-slate-800 bg-slate-950/50 backdrop-blur-md glass opacity-60">
@@ -149,11 +149,11 @@ export function Dashboard() {
             <CardTitle className="text-sm font-medium text-slate-200">
               Routing Health
             </CardTitle>
-            <Activity className="h-4 w-4 text-slate-600" />
+            <Activity className="h-4 w-4 text-slate-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-600">—</div>
-            <p className="text-xs text-slate-600">Waiting for backend</p>
+            <div className="text-2xl font-bold text-slate-300">—</div>
+            <p className="text-sm text-slate-300">Waiting for backend</p>
           </CardContent>
         </Card>
         <Card className="border-slate-800 bg-slate-950/50 backdrop-blur-md glass opacity-60">
@@ -161,11 +161,11 @@ export function Dashboard() {
             <CardTitle className="text-sm font-medium text-slate-200">
               Avg Latency
             </CardTitle>
-            <Zap className="h-4 w-4 text-slate-600" />
+            <Zap className="h-4 w-4 text-slate-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-600">—</div>
-            <p className="text-xs text-slate-600">Waiting for backend</p>
+            <div className="text-2xl font-bold text-slate-300">—</div>
+            <p className="text-sm text-slate-300">Waiting for backend</p>
           </CardContent>
         </Card>
       </div>
@@ -177,7 +177,7 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="h-[200px] flex items-center justify-center border border-dashed border-slate-800 rounded-md bg-slate-900/20">
-              <span className="text-slate-600 text-sm">
+              <span className="text-slate-300 text-sm">
                 Graph requires backend connection
               </span>
             </div>
@@ -188,7 +188,7 @@ export function Dashboard() {
             <CardTitle className="text-white">Recent Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-slate-600 text-sm">
+            <div className="text-center py-8 text-slate-300 text-sm">
               No recent actions — start the backend to see activity.
             </div>
           </CardContent>

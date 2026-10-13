@@ -165,7 +165,7 @@ export const AppsHub: React.FC = () => {
 
                 {/* Status message */}
                 {state?.message && (
-                  <p className="text-[11px] text-slate-400 mb-3 line-clamp-2">
+                  <p className="text-[11px] text-slate-300 mb-3 line-clamp-2">
                     {state.message}
                   </p>
                 )}

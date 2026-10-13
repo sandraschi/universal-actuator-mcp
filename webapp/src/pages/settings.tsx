@@ -16,7 +16,7 @@ export function Settings() {
         <h2 className="text-2xl font-bold tracking-tight text-white">
           Gateway Config
         </h2>
-        <p className="text-slate-400">
+        <p className="text-slate-300">
           Federation registry and security parameters
         </p>
       </div>
@@ -28,12 +28,12 @@ export function Settings() {
               <Server className="h-4 w-4 text-emerald-500" />
               Federation Registry
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-slate-300">
               Configuration not available — requires backend connection
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-12 text-slate-500 text-sm">
+            <div className="text-center py-12 text-slate-300 text-sm">
               No configuration data loaded. Start the backend to configure
               federation settings.
             </div>
@@ -46,7 +46,7 @@ export function Settings() {
               <Shield className="h-4 w-4 text-blue-500" />
               Security & Entropy
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-slate-300">
               Not yet available — backend API required
             </CardDescription>
           </CardHeader>
@@ -56,7 +56,7 @@ export function Settings() {
                 Action Rate Limit (per domain)
               </Label>
               <Input
-                className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-400"
+                className="bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-300"
                 defaultValue="500 actions/min"
                 disabled
               />

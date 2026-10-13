@@ -20,7 +20,7 @@ export function About() {
           <h1 className="text-6xl font-black text-white tracking-tighter">
             Universal <span className="text-emerald-500">Actuator</span>
           </h1>
-          <p className="text-2xl text-slate-400 font-medium">
+          <p className="text-2xl text-slate-300 font-medium">
             Automated Federation Control v3.4.0
           </p>
         </div>
@@ -36,7 +36,7 @@ export function About() {
             <Target className="text-emerald-400" />
             Core Objectives
           </h2>
-          <p className="text-slate-400 leading-relaxed">
+          <p className="text-slate-300 leading-relaxed">
             Designed as a high-performance substrate for cross-domain tool
             execution. The Actuator reduces semantic entropy by consolidating
             specialized domain toolsets into a single, high-availability
@@ -68,12 +68,12 @@ export function About() {
             <Shield className="text-emerald-400" />
             Security Posture
           </h2>
-          <p className="text-slate-400 leading-relaxed">
+          <p className="text-slate-300 leading-relaxed">
             Every action is performed under the principle of least privilege.
             Domain agents are isolated and strictly governed by the federation's
             central security policy, ensuring complete system integrity.
           </p>
-          <div className="pt-4 flex items-center gap-4 text-xs font-bold uppercase tracking-[0.2em] text-emerald-500/70">
+          <div className="pt-4 flex items-center gap-4 text-sm font-bold uppercase tracking-[0.2em] text-emerald-500/70">
             <span>Verified by MCP SOTA</span>
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             <span>2026 Compliant</span>
@@ -91,25 +91,25 @@ export function About() {
           >
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 group-hover:bg-slate-800 transition-colors">
               <Github
-                className="text-slate-400 group-hover:text-emerald-400"
+                className="text-slate-300 group-hover:text-emerald-400"
                 size={24}
               />
             </div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+            <span className="text-sm font-bold text-slate-300 uppercase tracking-widest">
               Source
             </span>
           </a>
           <div className="group flex flex-col items-center gap-3 opacity-40 cursor-not-allowed">
             <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-              <Info className="text-slate-400" size={24} />
+              <Info className="text-slate-300" size={24} />
             </div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+            <span className="text-sm font-bold text-slate-300 uppercase tracking-widest">
               Details
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-slate-500 text-sm italic">
+        <div className="flex items-center gap-3 text-slate-300 text-sm italic">
           <span>Optimized for performance in Vienna</span>
           <Heart
             size={14}

@@ -80,7 +80,7 @@ const MediaLibrary = () => {
     try {
       const res = await fetch(`${BACKEND}/library/ingest`, { method: "POST" });
       if (!res.ok) throw new Error(`Sync failed: ${res.status}`);
-      const _data = await res.json();
+      await res.json();
       await fetchLibrary(searchQuery, activeFilter);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sync failed");
@@ -221,7 +221,7 @@ const MediaLibrary = () => {
         </div>
       )}
       {deps?.ok && (
-        <div className="flex items-center gap-2 text-xs text-emerald-500/70">
+        <div className="flex items-center gap-2 text-sm text-emerald-500/70">
           <CheckCircle2 className="w-3 h-3" />
           <span>calibre-mcp and plex-mcp online</span>
         </div>
@@ -342,7 +342,7 @@ const MediaLibrary = () => {
               <ImageIcon className="w-6 h-6" />
             </div>
             <span className="font-medium">Ingest New Folder</span>
-            <p className="text-xs mt-1 opacity-60">Auto-glom active</p>
+            <p className="text-sm mt-1 opacity-60">Auto-glom active</p>
           </button>
         )}
       </div>

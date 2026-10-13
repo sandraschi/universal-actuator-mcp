@@ -15,7 +15,7 @@ const LEVEL_COLORS: Record<string, string> = {
   ERROR: "text-red-400 bg-red-950/40",
   WARNING: "text-yellow-400 bg-yellow-950/40",
   INFO: "text-blue-300 bg-blue-950/30",
-  DEBUG: "text-slate-500 bg-slate-900/30",
+  DEBUG: "text-slate-300 bg-slate-900/30",
 };
 
 export default function Logs() {
@@ -34,7 +34,9 @@ export default function Logs() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [userScrolled, setUserScrolled] = useState(false);
   const afterIdRef = useRef<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   const fetchLogs = useCallback(
     async (opts: { tail?: boolean; after_id?: string } = {}) => {
@@ -130,7 +132,7 @@ export default function Logs() {
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-lg font-bold text-slate-200 mr-2">Logs</h2>
         <select
-          className="h-8 rounded border border-slate-700 bg-slate-800 px-2 text-xs text-slate-300"
+          className="h-8 rounded border border-slate-700 bg-slate-800 px-2 text-sm text-slate-300"
           value={level}
           onChange={(e) => {
             setLevel(e.target.value);
@@ -145,7 +147,7 @@ export default function Logs() {
           ))}
         </select>
         <select
-          className="h-8 rounded border border-slate-700 bg-slate-800 px-2 text-xs text-slate-300"
+          className="h-8 rounded border border-slate-700 bg-slate-800 px-2 text-sm text-slate-300"
           value={kind}
           onChange={(e) => {
             setKind(e.target.value);
@@ -160,13 +162,13 @@ export default function Logs() {
           ))}
         </select>
         <input
-          className="h-8 w-48 rounded border border-slate-700 bg-slate-800 px-2 text-xs text-slate-300 placeholder:text-slate-500"
+          className="h-8 w-48 rounded border border-slate-700 bg-slate-800 px-2 text-sm text-slate-300 placeholder:text-slate-300"
           placeholder="Search..."
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
         />
         <select
-          className="h-8 rounded border border-slate-700 bg-slate-800 px-2 text-xs text-slate-300"
+          className="h-8 rounded border border-slate-700 bg-slate-800 px-2 text-sm text-slate-300"
           value={limit}
           onChange={(e) => {
             setLimit(Number(e.target.value));
@@ -180,58 +182,58 @@ export default function Logs() {
         </select>
         <button
           type="button"
-          className={`h-8 rounded px-3 text-xs font-medium ${tail ? "bg-emerald-600 text-white" : "border border-slate-700 text-slate-400 hover:bg-slate-800"}`}
+          className={`h-8 rounded px-3 text-sm font-medium ${tail ? "bg-emerald-600 text-white" : "border border-slate-700 text-slate-300 hover:bg-slate-800"}`}
           onClick={() => setTail(!tail)}
         >
           {tail ? "LIVE" : "Tail"}
         </button>
         <button
           type="button"
-          className="h-8 rounded border border-slate-700 px-3 text-xs text-slate-400 hover:bg-slate-800"
+          className="h-8 rounded border border-slate-700 px-3 text-sm text-slate-300 hover:bg-slate-800"
           onClick={() => handleExport("json")}
         >
           JSON
         </button>
         <button
           type="button"
-          className="h-8 rounded border border-slate-700 px-3 text-xs text-slate-400 hover:bg-slate-800"
+          className="h-8 rounded border border-slate-700 px-3 text-sm text-slate-300 hover:bg-slate-800"
           onClick={() => handleExport("csv")}
         >
           CSV
         </button>
         <button
           type="button"
-          className="h-8 rounded border border-red-800 px-3 text-xs text-red-400 hover:bg-red-950/30"
+          className="h-8 rounded border border-red-800 px-3 text-sm text-red-400 hover:bg-red-950/30"
           onClick={() => setShowClear(true)}
         >
           Clear
         </button>
-        <span className="text-xs text-slate-500 ml-auto">{total} entries</span>
+        <span className="text-sm text-slate-300 ml-auto">{total} entries</span>
       </div>
 
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="h-[65vh] overflow-auto rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-relaxed"
+        className="h-[65vh] overflow-auto rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-sm leading-relaxed"
       >
         {entries.length === 0 && !loading && (
-          <div className="text-slate-600 text-center py-12">No log entries</div>
+          <div className="text-slate-300 text-center py-12">No log entries</div>
         )}
         {entries.map((e) => (
           <div
             key={e.id}
             className="flex gap-3 py-0.5 hover:bg-slate-900/50 rounded px-1"
           >
-            <span className="text-slate-600 w-20 shrink-0">
+            <span className="text-slate-300 w-20 shrink-0">
               {e.timestamp.split(".")[0].split("T")[1] || e.timestamp}
             </span>
             <span
-              className={`w-16 shrink-0 text-center rounded text-[10px] font-bold ${LEVEL_COLORS[e.level] || "text-slate-400"}`}
+              className={`w-16 shrink-0 text-center rounded text-[10px] font-bold ${LEVEL_COLORS[e.level] || "text-slate-300"}`}
             >
               {e.level}
             </span>
             {e.kind && (
-              <span className="text-slate-500 w-16 shrink-0">[{e.kind}]</span>
+              <span className="text-slate-300 w-16 shrink-0">[{e.kind}]</span>
             )}
             <span className="text-slate-300 break-all">{e.detail}</span>
           </div>
@@ -239,7 +241,7 @@ export default function Logs() {
         <div ref={endRef} />
       </div>
 
-      <div className="flex items-center justify-between text-xs text-slate-500">
+      <div className="flex items-center justify-between text-sm text-slate-300">
         <button
           type="button"
           className="px-3 py-1 rounded border border-slate-700 hover:bg-slate-800 disabled:opacity-30"
@@ -277,13 +279,13 @@ export default function Logs() {
             <h3 className="text-lg font-bold text-slate-200 mb-2">
               Clear all logs?
             </h3>
-            <p className="text-sm text-slate-400 mb-4">
+            <p className="text-sm text-slate-300 mb-4">
               This cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
-                className="px-4 py-2 rounded border border-slate-700 text-slate-400 text-sm hover:bg-slate-800"
+                className="px-4 py-2 rounded border border-slate-700 text-slate-300 text-sm hover:bg-slate-800"
                 onClick={() => setShowClear(false)}
               >
                 Cancel

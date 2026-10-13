@@ -43,7 +43,7 @@ export function Help() {
   return (
     <div className="space-y-12 pb-12 overflow-x-hidden animate-in fade-in duration-500">
       <header className="space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-widest uppercase border border-emerald-500/20">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-bold tracking-widest uppercase border border-emerald-500/20">
           <Shield size={12} />
           <span>SOTA Standard Documentation</span>
         </div>
@@ -52,7 +52,7 @@ export function Help() {
           Universal Actuator <br />
           <span className="text-emerald-500">Operation Manual</span>
         </h1>
-        <p className="text-slate-400 max-w-2xl text-lg">
+        <p className="text-slate-300 max-w-2xl text-lg">
           Master the art of cross-domain orchestration. Learn how to leverage
           the full power of the Universal Actuator federation.
         </p>
@@ -74,7 +74,7 @@ export function Help() {
               {cat.items.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-4 text-slate-400 leading-relaxed text-sm"
+                  className="flex gap-4 text-slate-300 leading-relaxed text-sm"
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 shrink-0" />
                   <span>{item}</span>
@@ -100,7 +100,7 @@ export function Help() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-sm leading-relaxed">
             <div className="space-y-4">
-              <h3 className="text-emerald-400 font-bold uppercase tracking-widest text-xs">
+              <h3 className="text-emerald-400 font-bold uppercase tracking-widest text-sm">
                 Standard Protocols
               </h3>
               <p className="text-slate-300">
@@ -109,13 +109,13 @@ export function Help() {
                 call is strictly validated against current system state to
                 ensure deterministic outcomes.
               </p>
-              <div className="flex items-center gap-2 text-slate-500">
+              <div className="flex items-center gap-2 text-slate-300">
                 <LinkIcon size={16} />
                 <span>Documentation portal — not yet available</span>
               </div>
             </div>
             <div className="space-y-4">
-              <h3 className="text-emerald-400 font-bold uppercase tracking-widest text-xs">
+              <h3 className="text-emerald-400 font-bold uppercase tracking-widest text-sm">
                 Safety Mechanics
               </h3>
               <p className="text-slate-300">
@@ -123,7 +123,7 @@ export function Help() {
                 operations. If the orchestration heartbeat is lost, all active
                 domain agents immediately enter safe-state.
               </p>
-              <div className="flex items-center gap-2 text-slate-500">
+              <div className="flex items-center gap-2 text-slate-300">
                 <Shield size={16} />
                 <span>Emergency protocol — not yet available</span>
               </div>
