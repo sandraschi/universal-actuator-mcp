@@ -624,7 +624,7 @@ test = await rag_semantic_search(
 - Kill the existing process: `Get-NetTCPConnection -LocalPort 10745 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
 
 **Problem: CORS errors when connecting from a webapp**
-- The allowed origins include localhost:10745, localhost:10982, tauri://localhost, and Tailscale domains. If your webapp runs on a different port, add it to the `allow_origins` list in server.py.
+- The allowed origins include localhost:10745, localhost:11240, tauri://localhost, and Tailscale domains. If your webapp runs on a different port, add it to the `allow_origins` list in server.py.
 - The `allow_origin_regex` covers `*.ts.net`, `192.168.x.x`, `10.x.x.x`, and `100.x.x.x` — Tailscale users on any of these subnets should work without modification.
 
 ---

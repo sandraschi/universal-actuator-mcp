@@ -197,7 +197,7 @@ export function Chat() {
             id: crypto.randomUUID(),
             role: "assistant",
             content:
-              "Backend unreachable (port 10929). Start the server: uv run python -m universal_actuator_mcp.server",
+              "Backend unreachable (port 11239). Start the server: uv run python -m universal_actuator_mcp.server",
             timestamp: new Date().toLocaleTimeString(),
           },
         ]);
@@ -275,7 +275,7 @@ export function Chat() {
           </select>
           {isConnected === true && (
             <span className="flex items-center gap-1.5 text-sm text-emerald-400 font-mono">
-              <Wifi className="h-3 w-3" /> LIVE :10929
+              <Wifi className="h-3 w-3" /> LIVE :11239
             </span>
           )}
           {isConnected === false && (

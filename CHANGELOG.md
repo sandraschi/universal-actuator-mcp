@@ -7,6 +7,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.2.1] — 2026-10-13
+
+### Changed
+- Ports moved to top of chain via `fleet-gate/migrate_port.py`: backend 10929 -> **11239**,
+  frontend 10982 -> **11240** (now adjacent; old neighbors 10928/10930 belong to lewm/
+  songgeneration). Registry, starts README, fleet manifest, vite proxy, Tauri CSPs,
+  justfile recipes, docs and badges updated. Old ports freed.
+
 ## [2.2.0] — 2026-10-13
 
 ### Added (deferred batch from assfix 2026-10-13)

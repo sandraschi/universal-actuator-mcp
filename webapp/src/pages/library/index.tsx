@@ -233,7 +233,7 @@ const MediaLibrary = () => {
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>
             Actuator backend error: {error}. Is the backend running on port
-            10745?
+            11239?
           </span>
         </div>
       )}

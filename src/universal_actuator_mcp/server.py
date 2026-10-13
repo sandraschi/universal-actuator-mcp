@@ -167,7 +167,7 @@ _fleet: FleetManager | None = None
 # Initialize FastMCP 3.2 (Reductionist Standard)
 mcp = FastMCP(
     "Universal Actuator Hub",
-    version="2.2.0",
+    version="2.2.1",
 )
 
 
@@ -513,7 +513,7 @@ async def universal_status(ctx: Context) -> dict[str, Any]:
     data = {
         "fleet": telemetry,
         "rag": rag_info,
-        "system": {"version": "2.2.0", "timestamp": datetime.now().isoformat()},
+        "system": {"version": "2.2.1", "timestamp": datetime.now().isoformat()},
     }
     return {"success": True, "message": f"Fleet status: {telemetry.get('fleet_status')}.", "data": data}
 
@@ -900,7 +900,7 @@ async def root_health(request):
         {
             "status": "online",
             "service": "Universal Actuator Hub",
-            "version": "2.2.0",
+            "version": "2.2.1",
             "sota_standard": "v14.1.0",
             "timestamp": datetime.now().isoformat(),
         }
@@ -1080,7 +1080,7 @@ async def api_capabilities(request):
     return JSONResponse(
         {
             "service": "universal-actuator-mcp",
-            "version": "2.2.0",
+            "version": "2.2.1",
             "transports": ["stdio", "http"],
             "mcp_tools": list(_MCP_TOOL_NAMES),
             "tool_count": len(_MCP_TOOL_NAMES),
@@ -1235,7 +1235,7 @@ async def api_diagnostics(request):
     return JSONResponse(
         {
             "service": "universal-actuator-mcp",
-            "version": "2.2.0",
+            "version": "2.2.1",
             "status": "ok",
             "mcp_tools": list(_MCP_TOOL_NAMES),
             "tool_count": len(_MCP_TOOL_NAMES),
@@ -1376,7 +1376,7 @@ async def hub_status_resource() -> str:
     return json.dumps(
         {
             "service": "universal-actuator-mcp",
-            "version": "2.2.0",
+            "version": "2.2.1",
             "fleet_status": telemetry.get("fleet_status"),
             "active_nodes": telemetry.get("active_nodes"),
             "rag_items": rag_info.get("total_items"),
@@ -1393,10 +1393,10 @@ app = mcp.http_app(path="/")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:10929",
-        "http://localhost:10982",
-        "http://127.0.0.1:10929",
-        "http://127.0.0.1:10982",
+        "http://localhost:11239",
+        "http://localhost:11240",
+        "http://127.0.0.1:11239",
+        "http://127.0.0.1:11240",
         "http://tauri.localhost",
         "https://tauri.localhost",
         "tauri://localhost",
@@ -1414,7 +1414,7 @@ async def _maybe_proxy_to_daemon() -> bool:
     Prevents LanceDB/state contention when several stdio clients connect at once
     (SOTA §2.3). Returns True when proxying (caller must not continue startup).
     """
-    probe_url = os.environ.get("UA_MCP_URL", "http://127.0.0.1:10929/")
+    probe_url = os.environ.get("UA_MCP_URL", "http://127.0.0.1:11239/")
     try:
         import httpx
 
@@ -1458,9 +1458,9 @@ def main():
 
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
-    # SSE port for Universal Actuator Hub (10929); override with UA_SSE_PORT
+    # SSE port for Universal Actuator Hub (11239); override with UA_SSE_PORT
     # If MCP_TRANSPORT is set to 'sse', use it. Otherwise FastMCP handles transport.
-    _sse_port = int(os.environ.get("UA_SSE_PORT", os.environ.get("MCP_PORT", "10929")))
+    _sse_port = int(os.environ.get("UA_SSE_PORT", os.environ.get("MCP_PORT", "11239")))
     _transport = os.environ.get("MCP_TRANSPORT", None)
 
     if _transport == "sse" or os.environ.get("UA_FORCE_SSE"):
