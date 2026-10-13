@@ -9,8 +9,8 @@ repos:
     hooks:
       - id: biome-webapp
         name: biome (webapp)
-        entry: scripts/pre-commit-biome.ps1
-        language: script
+        entry: powershell.exe -NoProfile -File scripts/pre-commit-biome.ps1
+        language: system
         files: ^webapp/
         pass_filenames: false
       - id: no-bak
