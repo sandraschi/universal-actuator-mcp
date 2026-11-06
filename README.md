@@ -9,6 +9,8 @@
 </p>
 
 
+Federated consumption router and live-dashboard hub for the RoboFang fleet (Plex, Calibre, Immich).
+
 > 📖 **[Installation Guide](INSTALL.md)** — quick start, manual setup, and troubleshooting
 
 > **Federated consumption router and live-dashboard hub for the RoboFang fleet (Plex, Calibre, Immich).**
