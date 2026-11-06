@@ -1,7 +1,7 @@
 {
 	"name": "universal-actuator-mcp",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Federated consumption router and live-dashboard hub for the RoboFang fleet (Plex, Calibre, Immich).",
 	"main": "dist/index.js",
 	"type": "module",
 	"scripts": {
