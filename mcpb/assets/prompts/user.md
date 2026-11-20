@@ -54,10 +54,7 @@ discovery = await glom_on()
 Call `search_federated` with `domain="all"` (the default):
 
 ```python
-results = await search_federated(
-    query="neural networks",
-    domain="all"
-)
+results = await search_federated(query="neural networks", domain="all")
 ```
 
 **What you get back:**
@@ -71,10 +68,7 @@ A `total_hits` field tells you how many results were found across all sources. A
 If you only want to search your Calibre library, narrow the domain:
 
 ```python
-calibre_only = await search_federated(
-    query="transformer architecture",
-    domain="calibre"
-)
+calibre_only = await search_federated(query="transformer architecture", domain="calibre")
 ```
 
 Available domains: `"all"`, `"calibre"`, `"plex"`, `"immich"`, `"docs"`, `"knowledge"`.
@@ -85,9 +79,7 @@ The `universal_actuator` portmanteau also handles search, which is useful when y
 
 ```python
 results = await universal_actuator(
-    domain="media",
-    action="search",
-    payload={"query": "neural networks", "domain": "all"}
+    domain="media", action="search", payload={"query": "neural networks", "domain": "all"}
 )
 ```
 
@@ -145,10 +137,7 @@ This fetches up to 500 items from each of the five sources (Calibre, Plex, Immic
 Now you can query by meaning, not just keywords:
 
 ```python
-results = await rag_semantic_search(
-    query="sci-fi space exploration",
-    limit=5
-)
+results = await rag_semantic_search(query="sci-fi space exploration", limit=5)
 ```
 
 For a book titled "Dune" by Frank Herbert, the `_score` might be around 0.31 (lower = more similar). A Plex documentary about the James Webb Space Telescope might score around 0.45.
@@ -158,11 +147,7 @@ For a book titled "Dune" by Frank Herbert, the `_score` might be around 0.31 (lo
 If you only want results from your photo library:
 
 ```python
-photos = await rag_semantic_search(
-    query="conference presentation slides",
-    limit=10,
-    source="immich"
-)
+photos = await rag_semantic_search(query="conference presentation slides", limit=10, source="immich")
 ```
 
 **Performance notes:**
@@ -183,7 +168,7 @@ photos = await rag_semantic_search(
 result = await agentic_workflow_tool(
     goal="Search my Calibre library for books about reinforcement learning, check my Plex for related documentaries, log the findings as a milestone, and give me a summary.",
     max_steps=5,
-    context_depth="comprehensive"
+    context_depth="comprehensive",
 )
 ```
 
@@ -282,7 +267,7 @@ Hit `GET /api/v1/deps` via REST to see whether Calibre (`:10720`) and Plex (`:10
 m1 = await universal_milestone(
     title="Started RL Research Sprint",
     description="Initialized RAG index with 1160 items from 5 sources. Starting literature review.",
-    kind="achievement"
+    kind="achievement",
 )
 ```
 
@@ -292,13 +277,11 @@ m1 = await universal_milestone(
 m2 = await universal_milestone(
     title="Found Key Papers",
     description="Searched federated: found 3 RL books in Calibre, 1 documentary in Plex.",
-    kind="info"
+    kind="info",
 )
 
 m3 = await universal_milestone(
-    title="RAG Re-indexed",
-    description="Cleared and re-ingested RAG with new Calibre additions.",
-    kind="info"
+    title="RAG Re-indexed", description="Cleared and re-ingested RAG with new Calibre additions.", kind="info"
 )
 ```
 
@@ -500,56 +483,34 @@ Returns a simple echo acknowledgment.
 
 **Media search pattern:**
 ```python
-await universal_actuator(
-    domain="media",
-    action="search",
-    payload={"query": "genetic algorithms", "domain": "all"}
-)
+await universal_actuator(domain="media", action="search", payload={"query": "genetic algorithms", "domain": "all"})
 ```
 
 **Media ingest pattern:**
 ```python
-await universal_actuator(
-    domain="media",
-    action="ingest",
-    payload={}
-)
+await universal_actuator(domain="media", action="ingest", payload={})
 ```
 
 **RAG semantic search pattern:**
 ```python
 await universal_actuator(
-    domain="media",
-    action="rag_search",
-    payload={"query": "deep reinforcement learning", "limit": 5}
+    domain="media", action="rag_search", payload={"query": "deep reinforcement learning", "limit": 5}
 )
 ```
 
 **System telemetry pattern:**
 ```python
-await universal_actuator(
-    domain="system",
-    action="telemetry",
-    payload={}
-)
+await universal_actuator(domain="system", action="telemetry", payload={})
 ```
 
 **System discovery pattern:**
 ```python
-await universal_actuator(
-    domain="system",
-    action="discover",
-    payload={}
-)
+await universal_actuator(domain="system", action="discover", payload={})
 ```
 
 **System models pattern:**
 ```python
-await universal_actuator(
-    domain="system",
-    action="models",
-    payload={}
-)
+await universal_actuator(domain="system", action="models", payload={})
 ```
 
 **Note on fallback routing:** Any domain/action combination that does not match the defined routes returns `{"status": "partial_success", "message": "Domain 'X' action 'Y' routed via fallback."}`. The tool never errors on unrecognised routes — it always returns a graceful response.
@@ -581,17 +542,13 @@ stats = await rag_stats()
 await universal_milestone(
     title="Monthly RAG Maintenance",
     description=f"Re-indexed {stats['total_items']} items from {len(stats['source_distribution'])} sources.",
-    kind="achievement"
+    kind="achievement",
 )
 ```
 
 **Step 5: Verify search quality**
 ```python
-test = await rag_semantic_search(
-    query="sci-fi",
-    limit=3,
-    source="calibre"
-)
+test = await rag_semantic_search(query="sci-fi", limit=3, source="calibre")
 ```
 
 ---
@@ -700,9 +657,7 @@ Each instance has its own RAG index (`backend/state/lancedb/` — or override vi
 ```python
 # At the start of a session:
 await universal_milestone(
-    title="Session Start",
-    description="Hub initialised, RAG index at 1160 items, 5 fleet nodes active.",
-    kind="info"
+    title="Session Start", description="Hub initialised, RAG index at 1160 items, 5 fleet nodes active.", kind="info"
 )
 
 # After a major operation:
@@ -710,21 +665,21 @@ result = await ingest_fleet_to_rag()
 await universal_milestone(
     title="RAG Refresh Complete",
     description=f"Ingested {result['total_ingested']} new items from fleet sources.",
-    kind="achievement"
+    kind="achievement",
 )
 
 # When something goes wrong:
 await universal_milestone(
     title="Plex Connection Lost",
     description="Plex MCP server unreachable on port 10740. Federated search degraded.",
-    kind="warning"
+    kind="warning",
 )
 
 # At session end:
 await universal_milestone(
     title="Session Summary",
     description=f"Completed {len(history['milestones'])} milestones. RAG index at {stats['total_items']} items.",
-    kind="info"
+    kind="info",
 )
 ```
 
