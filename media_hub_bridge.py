@@ -30,7 +30,15 @@ mcp = FastMCP(
 app = mcp.http_app(path="/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://127.0.0.1:11240",
+        "http://localhost:11240",
+        "http://127.0.0.1:10747",
+        "http://localhost:10747",
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
