@@ -14,6 +14,7 @@ Use this workflow to correctly integrate custom REST endpoints into a FastMCP se
 ```python
 from starlette.responses import JSONResponse
 
+
 @mcp.custom_route("/api/v1/health", methods=["GET"])
 async def health(request):
     """
